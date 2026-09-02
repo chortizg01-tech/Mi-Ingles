@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: #f8fafc;
+    --card-bg: #ffffff;
+    --brand-primary: #4f46e5;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: #0f172a;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* Smooth inputs and text selection */
+  input, textarea {
+    user-select: text;
+  }
+}
+
+/* Custom scrollbars for clean mobile feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Voice Visualizer Waveform Animation */
+.voice-bar {
+  transition: height 0.15s ease-in-out;
+}
+
+/* Glassmorphism subtle accents for Light Mode */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-badge {
+  background: rgba(238, 242, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(199, 210, 254, 0.6);
+}
+
+/* Safe Area Insets for Mobile Devices */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top, 16px);
+}
