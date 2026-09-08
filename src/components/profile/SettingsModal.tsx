@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Database, Bot, Volume2, Save, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import { supabaseService } from '../../services/supabase';
 import { aiService, AISettings } from '../../services/aiService';
+import { storageService } from '../../services/storage';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -167,6 +168,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
             >
               <Save className="w-3.5 h-3.5" />
               <span>{aiSaved ? '¡Configuración Guardada!' : 'Guardar Ajustes de IA'}</span>
+            </button>
+          </div>
+
+          {/* RESET PROGRESS SECTION */}
+          <div className="bg-rose-50 rounded-2xl p-4 border border-rose-200 space-y-2">
+            <div className="flex items-center gap-2 font-bold text-rose-900">
+              <AlertCircle className="w-4 h-4 text-rose-600" />
+              <span>Reiniciar Progreso a Cero</span>
+            </div>
+            <p className="text-[11px] text-rose-700 leading-relaxed">
+              Borra todo el histórico de prueba para comenzar tu aprendizaje desde cero (0 minutos, 0 lecciones, baúl limpio).
+            </p>
+            <button
+              onClick={() => {
+                if (window.confirm('¿Estás seguro de que deseas reiniciar todo tu progreso a cero para empezar desde el principio?')) {
+                  storageService.resetAllProgress();
+                  window.location.reload();
+                }
+              }}
+              className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-xs"
+            >
+              🔄 Reiniciar Todo a Cero
             </button>
           </div>
         </div>

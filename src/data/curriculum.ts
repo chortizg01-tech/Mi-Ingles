@@ -2,12 +2,346 @@ import { Unit, SpeakingScenario, WritingSubmission } from '../types';
 
 export const CURRICULUM_UNITS: Unit[] = [
   // ==========================================
+  // LEVEL A2.1: Everyday Routines, Clear Sentences & Essential Needs
+  // ==========================================
+  {
+    id: 'unit-a2-1',
+    level: 'A2.1',
+    number: 1,
+    title: 'Rutinas Diarias y Comunicación Cotidiana',
+    description: 'Estructura oraciones en presente, aprende a pedir con cortesía en cafeterías y describe tu día sin miedo.',
+    badgeIcon: 'Coffee',
+    lessons: [
+      {
+        id: 'lesson-a2-1-1',
+        unitId: 'unit-a2-1',
+        level: 'A2.1',
+        title: 'Present Simple vs. Present Continuous & Adverbios de Frecuencia',
+        subtitle: 'Distingue entre tus hábitos constantes y lo que está ocurriendo ahora mismo.',
+        durationMinutes: 20,
+        focusSkill: 'grammar',
+        grammarNote: {
+          title: 'Presente Simple vs. Presente Continuo',
+          rules: [
+            'Present Simple: Úsalo para rutinas, hábitos y verdades permanentes (ej: "I work from home every Monday").',
+            'Present Continuous (am/is/are + verb-ing): Úsalo para acciones que suceden exactamente ahora (ej: "I am studying English right now").',
+            'Adverbios de frecuencia: always (100%), usually (80%), sometimes (50%), never (0%). Se colocan antes del verbo principal (ej: "I always drink coffee").'
+          ],
+          neuroChunks: [
+            { chunk: 'I usually + [verb]', meaning: 'Normalmente hago...', pnlVisual: 'Azul Hábito' },
+            { chunk: 'Right now I am + [verb-ing]', meaning: 'Justo ahora estoy haciendo...', pnlVisual: 'Verde Presente Activo' },
+            { chunk: 'Do you want to + [verb]?', meaning: '¿Quieres [hacer algo]?', pnlVisual: 'Amarillo Invitación' }
+          ],
+          examples: [
+            { en: 'I usually drink green tea in the morning, but today I am drinking black coffee.', es: 'Usualmente tomo té verde por la mañana, pero hoy estoy tomando café negro.' },
+            { en: 'She works at a technology company, and she is currently leading a new project.', es: 'Ella trabaja en una empresa de tecnología y actualmente está liderando un nuevo proyecto.' }
+          ],
+          commonMistakes: [
+            'No olvides la "s" en tercera persona singular (he/she/it works, he goes).',
+            'No digas "I am agree" ❌ -> Di "I agree" ✅.'
+          ]
+        },
+        vocabularyItems: [
+          {
+            term: 'Routine',
+            phonetic: '/ruːˈtiːn/',
+            definition: 'A sequence of actions regularly followed',
+            example: 'A healthy morning routine gives you energy.',
+            spanish: 'Rutina',
+            pnlAnchor: 'Imagina tu reloj despertador sonando a la misma hora matutina.'
+          },
+          {
+            term: 'Usually',
+            phonetic: '/ˈjuː.ʒu.ə.li/',
+            definition: 'Under normal conditions; generally',
+            example: 'I usually start work at 8:30 AM.',
+            spanish: 'Usualmente / habitualmente',
+            pnlAnchor: 'Visualiza un calendario con casi todos los días marcados con un visto bueno.'
+          },
+          {
+            term: 'Order',
+            phonetic: '/ˈɔːr.dər/',
+            definition: 'To ask for food or drink in a restaurant or store',
+            example: 'Can I order a cappuccino and a croissant?',
+            spanish: 'Pedir / ordenar (en restaurante)',
+            pnlAnchor: 'Imagina poner en orden lo que vas a pedir antes de que venga el camarero.'
+          }
+        ],
+        exercises: [
+          {
+            id: 'ex-a2-1-1',
+            type: 'multiple_choice',
+            skill: 'grammar',
+            instruction: 'Selecciona la opción correcta para completar la oración de rutina.',
+            question: 'Sarah usually _____ by subway, but today she is taking a taxi.',
+            options: [
+              { id: 'a', text: 'commutes' },
+              { id: 'b', text: 'is commuting' },
+              { id: 'c', text: 'commute' },
+              { id: 'd', text: 'has commute' }
+            ],
+            correctAnswer: 'a',
+            explanation: 'Usamos Present Simple con tercera persona (Sarah -> commutes) porque la palabra clave "usually" indica un hábito.',
+            difficulty: 'A2.1',
+            grammarTopic: 'Present Simple'
+          },
+          {
+            id: 'ex-a2-1-2',
+            type: 'fill_blank',
+            skill: 'grammar',
+            instruction: 'Completa la oración con la forma correcta de "study" para una acción que pasa ahora mismo.',
+            question: 'Be quiet please! My brother is _____ (study) for his exam right now.',
+            correctAnswer: 'studying',
+            explanation: 'Con "right now" usamos Present Continuous: is studying.',
+            difficulty: 'A2.1'
+          }
+        ]
+      },
+      {
+        id: 'lesson-a2-1-2',
+        unitId: 'unit-a2-1',
+        level: 'A2.1',
+        title: 'A Day in the Life of Alex (Remote Worker)',
+        subtitle: 'Lectura guiada: vocabulario diario, horarios y comprensión directa con traducción táctil.',
+        durationMinutes: 25,
+        focusSkill: 'reading',
+        readingPassage: {
+          title: 'My Daily Routine in London',
+          text: `My name is Alex and I work as a graphic designer from home. Every weekday, I wake up at 7:00 AM. First, I drink a glass of fresh water and prepare breakfast. I usually eat scrambled eggs, toast, and black coffee.
+          
+At 8:30 AM, I sit at my desk and check my urgent emails. At 11:00 AM, my team has a brief online video call to coordinate our design projects. During lunch, I like to take a 20-minute walk in the park near my apartment to get fresh air and relax my eyes.
+          
+In the afternoon, I focus on creative tasks without distractions. I finish my workday around 5:30 PM. In the evening, I often cook dinner with my partner, listen to a podcast, and read a few pages of a good book before going to sleep at 10:30 PM.`,
+          spanishTranslation: `Mi nombre es Alex y trabajo como diseñador gráfico desde casa. Todos los días entre semana, me despierto a las 7:00 AM. Primero, bebo un vaso de agua fresca y preparo el desayuno. Usualmente como huevos revueltos, tostadas y café negro.
+
+A las 8:30 AM, me siento en mi escritorio y reviso mis correos urgentes. A las 11:00 AM, mi equipo tiene una breve videollamada en línea para coordinar nuestros proyectos de diseño. Durante el almuerzo, me gusta dar una caminata de 20 minutos en el parque cerca de mi apartamento para tomar aire fresco y relajar mis ojos.
+
+Por la tarde, me enfoco en tareas creativas sin distracciones. Termino mi jornada laboral alrededor de las 5:30 PM. Por la noche, a menudo preparo la cena con mi pareja, escucho un podcast y leo algunas páginas de un buen libro antes de ir a dormir a las 10:30 PM.`,
+          wordCount: 155,
+          difficulty: 'A2.1',
+          pnlTip: 'Toca cualquier palabra que no conozcas para ver su traducción al español y fijarla en tu memoria visual.'
+        },
+        exercises: [
+          {
+            id: 'ex-a2-1-3',
+            type: 'multiple_choice',
+            skill: 'reading',
+            instruction: 'Responde la pregunta basada en la lectura.',
+            question: 'Why does Alex take a walk during lunch?',
+            options: [
+              { id: 'a', text: 'To buy groceries at the supermarket.' },
+              { id: 'b', text: 'To get fresh air and relax his eyes in the park.' },
+              { id: 'c', text: 'To meet his manager for coffee.' },
+              { id: 'd', text: 'To catch the subway to the office.' }
+            ],
+            correctAnswer: 'b',
+            explanation: 'El texto dice textualmente: "I like to take a 20-minute walk in the park near my apartment to get fresh air and relax my eyes".',
+            difficulty: 'A2.1'
+          }
+        ]
+      },
+      {
+        id: 'lesson-a2-1-3',
+        unitId: 'unit-a2-1',
+        level: 'A2.1',
+        title: 'Ordering at a Café & Hotel Check-in',
+        subtitle: 'Comprensión auditiva: fórmulas de cortesía, precios y confirmación en inglés real.',
+        durationMinutes: 25,
+        focusSkill: 'listening',
+        listeningScript: {
+          title: 'Morning Order at Greenwich Coffee Roasters',
+          speakerA: 'Barista (Sam)',
+          speakerB: 'Customer (Laura)',
+          accent: 'US',
+          fullText: `Barista: Good morning! Welcome to Greenwich Coffee. What can I get started for you today?
+Laura: Hi there! Could I please have a medium iced latte with oat milk?
+Barista: Sure thing! Would you like any flavor syrup in that, like vanilla or caramel?
+Laura: Just a shot of sugar-free vanilla, please. And could I also get one heated almond croissant?
+Barista: Absolutely. Is that for here or to go?
+Laura: For here, please. How much is the total?
+Barista: That comes to seven dollars and fifty cents. You can tap your card right on the terminal screen.
+Laura: Perfect. Thank you so much!`,
+          spanishTranslation: `Barista: ¡Buenos días! Bienvenido a Greenwich Coffee. ¿Qué puedo prepararte hoy?
+Laura: ¡Hola! ¿Podría darme un latte helado mediano con leche de avena, por favor?
+Barista: ¡Claro que sí! ¿Te gustaría algún sirope de sabor, como vainilla o caramelo?
+Laura: Solo un toque de vainilla sin azúcar, por favor. ¿Y podría pedir también un cruasán de almendras caliente?
+Barista: Por supuesto. ¿Es para tomar aquí o para llevar?
+Laura: Para tomar aquí, por favor. ¿Cuánto es el total?
+Barista: Serían siete dólares con cincuenta centavos. Puedes pasar tu tarjeta directamente en la pantalla del terminal.
+Laura: Perfecto. ¡Muchísimas gracias!`,
+          pnlFocus: 'Aprende las 3 fórmulas automáticas de cortesía: "Could I please have...", "For here or to go?", "How much is the total?".'
+        },
+        exercises: [
+          {
+            id: 'ex-a2-1-4',
+            type: 'multiple_choice',
+            skill: 'listening',
+            instruction: 'Escucha el diálogo y selecciona la opción correcta.',
+            audioText: 'Could I please have a medium iced latte with oat milk?',
+            question: 'What kind of milk does Laura request for her iced latte?',
+            options: [
+              { id: 'a', text: 'Whole regular cow milk' },
+              { id: 'b', text: 'Oat milk' },
+              { id: 'c', text: 'Soy milk' },
+              { id: 'd', text: 'Almond milk' }
+            ],
+            correctAnswer: 'b',
+            explanation: 'Laura pide específicamente "oat milk" (leche de avena).',
+            difficulty: 'A2.1'
+          }
+        ]
+      }
+    ]
+  },
+
+  // ==========================================
+  // LEVEL A2.2: Past Experiences, Travel & Making Plans
+  // ==========================================
+  {
+    id: 'unit-a2-2',
+    level: 'A2.2',
+    number: 2,
+    title: 'Experiencias Pasadas, Viajes y Direcciones',
+    description: 'Aprende a contar qué hiciste ayer o en tus últimas vacaciones (Past Simple) y a orientarte en una ciudad.',
+    badgeIcon: 'Compass',
+    lessons: [
+      {
+        id: 'lesson-a2-2-1',
+        unitId: 'unit-a2-2',
+        level: 'A2.2',
+        title: 'Past Simple: Regular & Irregular Verbs in Action',
+        subtitle: 'Cuenta historias pasadas sin trabarte: verbos con -ed y los irregulares más usados.',
+        durationMinutes: 25,
+        focusSkill: 'grammar',
+        grammarNote: {
+          title: 'Dominando el Pasado Simple',
+          rules: [
+            'Verbos Regulares: Añade -ed (ej: work -> worked, visit -> visited, clean -> cleaned).',
+            'Verbos Irregulares clave: go -> went, have -> had, see -> saw, buy -> bought, meet -> met, eat -> ate.',
+            'Negación en Pasado: Sujeto + didn\'t + verbo en infinitivo (ej: "I didn\'t go to the party", NUNCA "didn\'t went").',
+            'Pregunta en Pasado: Did + sujeto + verbo en infinitivo? (ej: "Did you enjoy the trip?").'
+          ],
+          neuroChunks: [
+            { chunk: 'Yesterday I went to + [lugar]', meaning: 'Ayer fui a...', pnlVisual: 'Rojo Pasado' },
+            { chunk: 'I didn\'t have time to + [verbo]', meaning: 'No tuve tiempo de...', pnlVisual: 'Azul Bloqueo' },
+            { chunk: 'Did you see + [persona/cosa]?', meaning: '¿Viste a...?', pnlVisual: 'Amarillo Pregunta Pasada' }
+          ],
+          examples: [
+            { en: 'Last weekend, we traveled to the mountains and had a wonderful picnic.', es: 'El fin de semana pasado viajamos a las montañas y tuvimos un pícnic maravilloso.' },
+            { en: 'I didn\'t receive the confirmation email yesterday.', es: 'No recibí el correo de confirmación ayer.' }
+          ],
+          commonMistakes: [
+            'Recuerda que con "didn\'t" el verbo vuelve a su forma base: "I didn\'t see" ✅, NO "I didn\'t saw" ❌.'
+          ]
+        },
+        vocabularyItems: [
+          {
+            term: 'Yesterday',
+            phonetic: '/ˈjes.tə.deɪ/',
+            definition: 'On the day before today',
+            example: 'Yesterday was a very sunny day.',
+            spanish: 'Ayer',
+            pnlAnchor: 'Mira hacia atrás sobre tu hombro: el día que ya quedó en el pasado.'
+          },
+          {
+            term: 'Arrive',
+            phonetic: '/əˈraɪv/',
+            definition: 'Reach a destination at the end of a journey',
+            example: 'We arrived at the hotel at 9:00 PM.',
+            spanish: 'Llegar',
+            pnlAnchor: 'Imagina la puerta abriéndose y pisando el suelo del hotel.'
+          },
+          {
+            term: 'Straight',
+            phonetic: '/streɪt/',
+            definition: 'In a continuous line without turning',
+            example: 'Walk straight ahead for two blocks.',
+            spanish: 'Recto / derecho',
+            pnlAnchor: 'Una flecha directa que no se desvía a ningún lado.'
+          }
+        ],
+        exercises: [
+          {
+            id: 'ex-a2-2-1',
+            type: 'multiple_choice',
+            skill: 'grammar',
+            instruction: 'Selecciona la forma correcta del verbo en pasado irregular.',
+            question: 'Last night, we _____ to a traditional Italian restaurant and ate delicious pasta.',
+            options: [
+              { id: 'a', text: 'went' },
+              { id: 'b', text: 'goed' },
+              { id: 'c', text: 'gone' },
+              { id: 'd', text: 'was go' }
+            ],
+            correctAnswer: 'a',
+            explanation: 'El pasado del verbo "go" es irregular: "went".',
+            difficulty: 'A2.2'
+          },
+          {
+            id: 'ex-a2-2-2',
+            type: 'fill_blank',
+            skill: 'grammar',
+            instruction: 'Completa la negación en pasado simple con "not buy". Escribe: didn\'t buy',
+            question: 'The flight was too expensive, so I _____ (not buy) the ticket. Type: didn\'t buy',
+            correctAnswer: "didn't buy",
+            explanation: 'La negación en pasado simple se forma con didn\'t + verbo base (buy).',
+            difficulty: 'A2.2'
+          }
+        ]
+      },
+      {
+        id: 'lesson-a2-2-2',
+        unitId: 'unit-a2-2',
+        level: 'A2.2',
+        title: 'Airport Announcements & Flight Boarding',
+        subtitle: 'Listening en contexto real: horarios de vuelo, puertas de embarque y equipaje.',
+        durationMinutes: 25,
+        focusSkill: 'listening',
+        listeningScript: {
+          title: 'Final Boarding Call at Gate 14',
+          speakerA: 'Airport Announcer',
+          speakerB: 'Traveler (Carlos)',
+          accent: 'UK',
+          fullText: `Announcer: Attention all passengers on British Airways flight BA249 to Barcelona. This is the final boarding call. All ticketed passengers should proceed immediately to Gate 14.
+Carlos: Excuse me, officer! Is Gate 14 straight down this corridor?
+Officer: Yes, sir. Walk straight past the duty-free shops and turn right at the information desk. Gate 14 is right at the end.
+Carlos: Thank you so much! Have a great day.`,
+          spanishTranslation: `Locutor: Atención a todos los pasajeros del vuelo BA249 de British Airways con destino a Barcelona. Esta es la última llamada de embarque. Todos los pasajeros con boleto deben dirigirse inmediatamente a la Puerta 14.
+Carlos: ¡Disculpe, oficial! ¿La Puerta 14 queda todo recto por este pasillo?
+Oficial: Sí, señor. Camine todo recto pasando las tiendas libres de impuestos y gire a la derecha en el mostrador de información. La Puerta 14 está justo al final.
+Carlos: ¡Muchísimas gracias! Que tenga un excelente día.`,
+          pnlFocus: 'Escucha cómo se enlazan las palabras en inglés británico: "proceed immediately", "straight down".'
+        },
+        exercises: [
+          {
+            id: 'ex-a2-2-3',
+            type: 'multiple_choice',
+            skill: 'listening',
+            instruction: 'Escucha el anuncio y responde la pregunta.',
+            audioText: 'All ticketed passengers should proceed immediately to Gate 14.',
+            question: 'Which gate is announced for the flight to Barcelona?',
+            options: [
+              { id: 'a', text: 'Gate 4' },
+              { id: 'b', text: 'Gate 14' },
+              { id: 'c', text: 'Gate 40' },
+              { id: 'd', text: 'Gate 24' }
+            ],
+            correctAnswer: 'b',
+            explanation: 'El locutor indica claramente "Gate 14" (Puerta 14).',
+            difficulty: 'A2.2'
+          }
+        ]
+      }
+    ]
+  },
+
+  // ==========================================
   // LEVEL B1.1: Foundations & Narrative Power
   // ==========================================
   {
     id: 'unit-b1-1',
     level: 'B1.1',
-    number: 1,
+    number: 3,
     title: 'Narratives, Time & Life Events',
     description: 'Master past tenses combination, temporal markers, and conversational storytelling.',
     badgeIcon: 'Compass',
@@ -480,6 +814,32 @@ Agent: Thank you. Let me scan the tags in our central locator system... Right. I
 // Escenarios para el Tutor de Speaking
 export const SPEAKING_SCENARIOS: SpeakingScenario[] = [
   {
+    id: 'scenario-a2-1',
+    level: 'A2.1',
+    title: 'At the Café: Ordering Coffee & Snacks',
+    context: 'You are ordering your breakfast at a friendly café in New York.',
+    tutorRole: 'Friendly Barista (Sam)',
+    userRole: 'Customer',
+    starterPrompt: 'Good morning! Welcome to Soho Roasters. What can I get started for you today?',
+    accent: 'US',
+    targetVocab: ['Order', 'Latte', 'Croissant', 'For here', 'Total'],
+    suggestedDurationMinutes: 8,
+    pnlTip: 'Usa la fórmula automática: "Hi! Could I please have a [bebida] and a [comida]?"'
+  },
+  {
+    id: 'scenario-a2-2',
+    level: 'A2.2',
+    title: 'Asking for Directions in the City',
+    context: 'You are looking for the central train station in London.',
+    tutorRole: 'Local Resident (Oliver)',
+    userRole: 'Traveler',
+    starterPrompt: 'Hello there! You look a bit lost. Can I help you find your way?',
+    accent: 'UK',
+    targetVocab: ['Straight', 'Turn left', 'Turn right', 'Blocks', 'Station'],
+    suggestedDurationMinutes: 8,
+    pnlTip: 'Responde usando: "Excuse me, could you tell me how to get to the station?"'
+  },
+  {
     id: 'scenario-1',
     level: 'B1.2',
     title: 'Job Interview: Describing Strengths & Prior Challenges',
@@ -519,6 +879,26 @@ export const SPEAKING_SCENARIOS: SpeakingScenario[] = [
 
 // Prompts para el Laboratorio de Writing
 export const WRITING_PROMPTS = [
+  {
+    id: 'write-a2-1',
+    level: 'A2.1' as const,
+    title: 'Friendly Message: Inviting a Friend for Coffee',
+    type: 'Casual Note',
+    targetWords: '40 - 70 words',
+    minWords: 30,
+    instructions: 'Write a short message to your friend inviting them for a coffee tomorrow afternoon. Suggest a time (e.g. 4:00 PM) and a place.',
+    sampleContext: 'Hi Mark! Are you free tomorrow afternoon? Would you like to meet for a coffee around 4:00 PM at...'
+  },
+  {
+    id: 'write-a2-2',
+    level: 'A2.2' as const,
+    title: 'Short Journal: My Last Weekend Trip',
+    type: 'Personal Journal',
+    targetWords: '60 - 90 words',
+    minWords: 50,
+    instructions: 'Describe what you did last weekend. Mention where you went, who you were with, what you ate, and whether you had fun (using Past Simple).',
+    sampleContext: 'Last Saturday, I visited the botanical gardens with my family. The weather was fantastic and we ate...'
+  },
   {
     id: 'write-1',
     level: 'B1.2' as const,

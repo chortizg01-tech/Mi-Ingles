@@ -1,7 +1,36 @@
 import { AssessmentQuestion } from '../types';
 
 export const PLACEMENT_TEST_QUESTIONS: AssessmentQuestion[] = [
-  // A2 / B1 Filter
+  // A2.1 & A2.2 Filter
+  {
+    id: 'pt-a2-1',
+    levelTarget: 'A2.1',
+    skill: 'grammar',
+    prompt: 'Every morning, David _____ a hot cup of coffee before going to work.',
+    options: [
+      { id: 'a', text: 'drinks' },
+      { id: 'b', text: 'is drinking' },
+      { id: 'c', text: 'drank' },
+      { id: 'd', text: 'drink' }
+    ],
+    correctOptionId: 'a',
+    explanation: 'Present Simple with third person singular (David -> drinks) is used for habitual actions ("every morning").'
+  },
+  {
+    id: 'pt-a2-2',
+    levelTarget: 'A2.2',
+    skill: 'vocabulary',
+    prompt: 'Excuse me, could you tell me how to get to the train _____?',
+    options: [
+      { id: 'a', text: 'station' },
+      { id: 'b', text: 'routine' },
+      { id: 'c', text: 'order' },
+      { id: 'd', text: 'board' }
+    ],
+    correctOptionId: 'a',
+    explanation: '"Train station" is the standard collocation for the railway transport hub.'
+  },
+  // B1.1 Filter
   {
     id: 'pt-1',
     levelTarget: 'B1.1',
@@ -121,6 +150,11 @@ export const PLACEMENT_TEST_QUESTIONS: AssessmentQuestion[] = [
 ];
 
 export const LEVEL_CERTIFICATES = {
+  A2: {
+    title: 'Waystage Communicator (CEFR A2)',
+    description: 'You can understand sentences and frequently used expressions related to areas of most immediate relevance (basic personal info, shopping, local geography, employment).',
+    badgeColor: 'from-sky-500 to-blue-600'
+  },
   B1: {
     title: 'Independent Communicator (CEFR B1)',
     description: 'You can navigate most everyday situations, write connected text on topics of personal interest, and describe experiences, events, dreams, and ambitions.',

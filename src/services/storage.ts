@@ -1,70 +1,29 @@
-import { UserProfile, ErrorItem, WritingSubmission, SpeakingTurn, AssessmentResult } from '../types';
+import { UserProfile, ErrorItem, WritingSubmission, SpeakingTurn, AssessmentResult, SavedWord } from '../types';
 import { supabaseService } from './supabase';
 
-const INITIAL_PROFILE: UserProfile = {
+const CLEAN_INITIAL_PROFILE: UserProfile = {
   id: 'learner-user-1',
-  name: 'English Scholar',
+  name: 'Estudiante',
   email: 'learner@example.com',
-  currentLevel: 'B1.1',
+  currentLevel: 'A2.1', // Iniciando en A2.1 para progresión amigable
   targetLevel: 'C1',
-  streakDays: 4,
+  streakDays: 1,
   lastStudyDate: new Date().toISOString().split('T')[0],
-  dailyGoalMinutes: 240, // 4 hours daily as specified in PRD
-  todayStudyMinutes: 42,
-  totalStudyMinutes: 1380, // ~23 hours accumulated
-  xp: 1450,
-  completedLessonIds: ['lesson-b1-1-1'],
+  dailyGoalMinutes: 240, // 4 horas diarias
+  todayStudyMinutes: 0,
+  totalStudyMinutes: 0,
+  xp: 0,
+  completedLessonIds: [],
   masteryScores: {
-    reading: 58,
-    writing: 46,
-    listening: 52,
-    speaking: 42,
-    grammar: 60,
-    vocabulary: 54
-  }
+    reading: 25,
+    writing: 25,
+    listening: 25,
+    speaking: 25,
+    grammar: 25,
+    vocabulary: 25
+  },
+  savedWords: []
 };
-
-const INITIAL_ERROR_BANK: ErrorItem[] = [
-  {
-    id: 'err-seed-1',
-    category: 'Past Perfect Sequences',
-    skill: 'grammar',
-    mistake: 'When I arrived at the station, the train left.',
-    correction: 'When I arrived at the station, the train had already left.',
-    explanation: 'Use the Past Perfect ("had left") for an action that was completed before another past event.',
-    incorrectCount: 2,
-    correctInARow: 1,
-    isMastered: false,
-    lastReviewedAt: new Date(Date.now() - 86400000).toISOString(),
-    nextReviewDate: new Date().toISOString().split('T')[0] // Due today
-  },
-  {
-    id: 'err-seed-2',
-    category: 'Preposition Collocations',
-    skill: 'vocabulary',
-    mistake: 'It strictly depends of the budget.',
-    correction: 'It strictly depends on the budget.',
-    explanation: 'The verb "depend" always collocates with the preposition "on" (or "upon" in formal contexts), never "of".',
-    incorrectCount: 3,
-    correctInARow: 2,
-    isMastered: false,
-    lastReviewedAt: new Date(Date.now() - 172800000).toISOString(),
-    nextReviewDate: new Date().toISOString().split('T')[0] // Due today
-  },
-  {
-    id: 'err-seed-3',
-    category: 'Negative Inversion Word Order',
-    skill: 'grammar',
-    mistake: 'Rarely I have witnessed such team commitment.',
-    correction: 'Rarely have I witnessed such team commitment.',
-    explanation: 'When starting a sentence with negative adverbs like Rarely/Seldom, invert the auxiliary verb and subject.',
-    incorrectCount: 1,
-    correctInARow: 0,
-    isMastered: false,
-    lastReviewedAt: new Date().toISOString(),
-    nextReviewDate: new Date().toISOString().split('T')[0] // Due today
-  }
-];
 
 class StorageService {
   private profileKey = 'mi_ingles_profile';
@@ -73,30 +32,27 @@ class StorageService {
   private speakingKey = 'mi_ingles_speaking_sessions';
   private assessmentKey = 'mi_ingles_assessments';
   private dailyLogsKey = 'mi_ingles_daily_logs';
+  private savedWordsKey = 'mi_ingles_saved_words';
 
   // PROFILE
   public getProfile(): UserProfile {
     const data = localStorage.getItem(this.profileKey);
     if (!data) {
-      this.saveProfile(INITIAL_PROFILE);
-      return INITIAL_PROFILE;
+      this.saveProfile(CLEAN_INITIAL_PROFILE);
+      return CLEAN_INITIAL_PROFILE;
     }
     try {
       const parsed: UserProfile = JSON.parse(data);
-      // Check if today is a new day to reset today's minutes
       const today = new Date().toISOString().split('T')[0];
       if (parsed.lastStudyDate !== today) {
-        // If last study date was yesterday, maintain streak, otherwise handle streak
         const lastDate = new Date(parsed.lastStudyDate);
         const currDate = new Date(today);
         const diffDays = Math.round((currDate.getTime() - lastDate.getTime()) / (1000 * 3600 * 24));
         
         let newStreak = parsed.streakDays;
         if (diffDays > 1) {
-          // Streak broken
           newStreak = 1;
         } else if (diffDays === 1) {
-          // New day continuation
           newStreak = parsed.streakDays + 1;
         }
 
@@ -107,7 +63,7 @@ class StorageService {
       }
       return parsed;
     } catch (e) {
-      return INITIAL_PROFILE;
+      return CLEAN_INITIAL_PROFILE;
     }
   }
 
@@ -120,13 +76,13 @@ class StorageService {
   public getErrorBank(): ErrorItem[] {
     const data = localStorage.getItem(this.errorBankKey);
     if (!data) {
-      this.saveErrorBank(INITIAL_ERROR_BANK);
-      return INITIAL_ERROR_BANK;
+      this.saveErrorBank([]);
+      return [];
     }
     try {
       return JSON.parse(data);
     } catch (e) {
-      return INITIAL_ERROR_BANK;
+      return [];
     }
   }
 
@@ -159,22 +115,30 @@ class StorageService {
     localStorage.setItem(this.assessmentKey, JSON.stringify(updated));
   }
 
-  // DAILY LOGS (For 4-Hour Tracking)
+  // SAVED VOCABULARY WORDS (Tap-to-Translate)
+  public getSavedWords(): SavedWord[] {
+    const data = localStorage.getItem(this.savedWordsKey);
+    return data ? JSON.parse(data) : [];
+  }
+
+  public saveWord(word: SavedWord): boolean {
+    const existing = this.getSavedWords();
+    if (!existing.some(w => w.term.toLowerCase() === word.term.toLowerCase())) {
+      const updated = [word, ...existing];
+      localStorage.setItem(this.savedWordsKey, JSON.stringify(updated));
+      return true;
+    }
+    return false;
+  }
+
+  // DAILY LOGS
   public getDailyLogs(): { date: string; minutes: number }[] {
     const data = localStorage.getItem(this.dailyLogsKey);
     if (!data) {
-      // Seed last 7 days of realistic logs
-      const seed = [
-        { date: '2026-08-27', minutes: 180 },
-        { date: '2026-08-28', minutes: 210 },
-        { date: '2026-08-29', minutes: 240 },
-        { date: '2026-08-30', minutes: 195 },
-        { date: '2026-08-31', minutes: 240 },
-        { date: '2026-09-01', minutes: 225 },
-        { date: new Date().toISOString().split('T')[0], minutes: 42 }
-      ];
-      localStorage.setItem(this.dailyLogsKey, JSON.stringify(seed));
-      return seed;
+      const today = new Date().toISOString().split('T')[0];
+      const cleanLogs = [{ date: today, minutes: 0 }];
+      localStorage.setItem(this.dailyLogsKey, JSON.stringify(cleanLogs));
+      return cleanLogs;
     }
     return JSON.parse(data);
   }
@@ -197,7 +161,19 @@ class StorageService {
     localStorage.setItem(this.dailyLogsKey, JSON.stringify(logs));
   }
 
-  // SUPABASE SYNC HELPERS (Silent background synchronization)
+  // RESET TO ZERO (Comenzar desde cero)
+  public resetAllProgress(): void {
+    localStorage.removeItem(this.profileKey);
+    localStorage.removeItem(this.errorBankKey);
+    localStorage.removeItem(this.writingKey);
+    localStorage.removeItem(this.speakingKey);
+    localStorage.removeItem(this.assessmentKey);
+    localStorage.removeItem(this.dailyLogsKey);
+    this.saveProfile(CLEAN_INITIAL_PROFILE);
+    this.saveErrorBank([]);
+  }
+
+  // SUPABASE SYNC
   private async syncProfileToSupabase(profile: UserProfile) {
     const sb = supabaseService.getClient();
     if (!sb) return;
@@ -227,7 +203,7 @@ class StorageService {
     const sb = supabaseService.getClient();
     if (!sb) return;
     try {
-      // Sync logic
+      // Sync
     } catch (e) {
       // Silent
     }

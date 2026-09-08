@@ -11,9 +11,9 @@ interface RoadmapViewProps {
 
 export const RoadmapView: React.FC<RoadmapViewProps> = ({ onSelectLesson, initialLessonId }) => {
   const { user } = useStudy();
-  const [selectedLevel, setSelectedLevel] = useState<CEFRSubLevel>(user.currentLevel || 'B1.1');
+  const [selectedLevel, setSelectedLevel] = useState<CEFRSubLevel>(user.currentLevel || 'A2.1');
 
-  const levels: CEFRSubLevel[] = ['B1.1', 'B1.2', 'B2.1', 'B2.2', 'C1.1', 'C1.2'];
+  const levels: CEFRSubLevel[] = ['A2.1', 'A2.2', 'B1.1', 'B1.2', 'B2.1', 'B2.2', 'C1.1', 'C1.2'];
   const filteredUnits = CURRICULUM_UNITS.filter(u => u.level === selectedLevel);
 
   const getSkillIcon = (skill: SkillType) => {

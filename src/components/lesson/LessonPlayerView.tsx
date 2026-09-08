@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Volume2, CheckCircle, XCircle, Sparkles, BookOpen, ChevronRight, Check, Award, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Volume2, CheckCircle, XCircle, Sparkles, BookOpen, ChevronRight, Check, Award, RotateCcw, Brain, Globe, Gauge } from 'lucide-react';
 import { Lesson, Exercise } from '../../types';
 import { speechService } from '../../services/speechService';
 import { useStudy } from '../../context/StudyContext';
+import { InteractiveText } from '../common/InteractiveText';
+import { AudioSpeedControl } from '../common/AudioSpeedControl';
 
 interface LessonPlayerViewProps {
   lesson: Lesson;
@@ -23,6 +25,7 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean>(false);
   const [correctAnswersCount, setCorrectAnswersCount] = useState<number>(0);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [activeSpeed, setActiveSpeed] = useState<number>(speechService.getPlaybackRate());
 
   const currentExercise: Exercise | undefined = lesson.exercises[currentExerciseIdx];
 
@@ -30,6 +33,7 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
     setIsPlayingAudio(true);
     speechService.speak(text, {
       accent,
+      rate: activeSpeed,
       onEnd: () => setIsPlayingAudio(false),
       onError: () => setIsPlayingAudio(false)
     });
@@ -95,13 +99,17 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-600 block">
             {lesson.level} • {lesson.focusSkill}
           </span>
-          <h2 className="text-xs font-bold text-slate-900 truncate max-w-[220px] mx-auto">
+          <h2 className="text-xs font-bold text-slate-900 truncate max-w-[200px] mx-auto">
             {lesson.title}
           </h2>
         </div>
 
-        <div className="text-xs font-bold text-slate-400">
-          {step === 'quiz' ? `${currentExerciseIdx + 1}/${lesson.exercises.length}` : ''}
+        <div className="flex items-center gap-1.5">
+          <AudioSpeedControl
+            compact={true}
+            currentRate={activeSpeed}
+            onChange={(r) => setActiveSpeed(r)}
+          />
         </div>
       </div>
 
@@ -122,6 +130,29 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
                   <span>{lesson.grammarNote.title}</span>
                 </h3>
 
+                {/* Neuro Chunks if available */}
+                {lesson.grammarNote.neuroChunks && (
+                  <div className="space-y-2 bg-gradient-to-br from-brand-900 to-indigo-950 p-4 rounded-2xl text-white">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300 flex items-center gap-1">
+                      <Brain className="w-3.5 h-3.5" />
+                      <span>Fórmulas y Chunks Neuronales Clave</span>
+                    </span>
+                    <div className="grid grid-cols-1 gap-2 pt-1">
+                      {lesson.grammarNote.neuroChunks.map((nc, idx) => (
+                        <div key={idx} className="bg-white/10 p-2.5 rounded-xl border border-white/10 flex items-center justify-between gap-2">
+                          <div>
+                            <span className="text-xs font-extrabold text-amber-300">{nc.chunk}</span>
+                            <p className="text-[11px] text-slate-200">{nc.meaning}</p>
+                          </div>
+                          <span className="text-[9px] bg-brand-500/40 text-brand-200 px-2 py-0.5 rounded font-medium shrink-0">
+                            {nc.pnlVisual}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <ul className="space-y-2">
                   {lesson.grammarNote.rules.map((rule, i) => (
                     <li key={i} className="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-150 leading-relaxed flex items-start gap-2">
@@ -132,12 +163,22 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
                 </ul>
 
                 <div className="space-y-2 mt-3">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Ejemplos Contextualizados</h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Ejemplos Contextualizados
+                    </h4>
+                    <span className="text-[10px] text-brand-600 font-semibold">Toca las palabras para traducir</span>
+                  </div>
+
                   {lesson.grammarNote.examples.map((ex, i) => (
                     <div key={i} className="bg-brand-50/60 p-3 rounded-xl border border-brand-100 flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-xs font-semibold text-brand-900">"{ex.en}"</p>
-                        <p className="text-[11px] text-brand-700 mt-0.5">{ex.es}</p>
+                      <div className="flex-1">
+                        <InteractiveText
+                          text={ex.en}
+                          spanishTranslation={ex.es}
+                          showFullSpanishToggle={false}
+                        />
+                        <p className="text-[11px] text-brand-700 mt-1">{ex.es}</p>
                       </div>
                       <button
                         onClick={() => handleSpeak(ex.en)}
@@ -186,8 +227,8 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
       {step === 'vocab' && lesson.vocabularyItems && (
         <div className="flex-1 p-5 overflow-y-auto space-y-4">
           <div className="text-center mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-brand-600">Vocabulario Clave C1/B2</span>
-            <h2 className="text-sm font-bold text-slate-800">Términos esenciales para esta lección</h2>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-brand-600">Vocabulario Clave • {lesson.level}</span>
+            <h2 className="text-sm font-bold text-slate-800">Términos esenciales y anclajes mentales</h2>
           </div>
 
           <div className="space-y-3">
@@ -208,8 +249,18 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
 
                 <div className="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                   <span className="font-bold text-slate-900">Significado: </span>
-                  {v.definition} ({v.spanish})
+                  {v.definition} (<strong className="text-emerald-700">{v.spanish}</strong>)
                 </div>
+
+                {v.pnlAnchor && (
+                  <div className="text-[11px] text-amber-900 bg-amber-50/70 p-2.5 rounded-xl border border-amber-200/80 flex items-start gap-1.5">
+                    <Brain className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-amber-800">Anclaje PNL: </span>
+                      <span>{v.pnlAnchor}</span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="text-[11px] text-brand-900 bg-brand-50/50 p-2 rounded-xl italic">
                   "{v.example}"
@@ -249,22 +300,31 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
               </div>
 
               <h2 className="text-base font-extrabold text-slate-900">{lesson.readingPassage.title}</h2>
-              <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                {lesson.readingPassage.text}
+
+              {/* Interactive Reading Text with Tap-to-Translate & Spanish Reveal */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <InteractiveText
+                  text={lesson.readingPassage.text}
+                  spanishTranslation={lesson.readingPassage.spanishTranslation}
+                  pnlTip={lesson.readingPassage.pnlTip || 'Toca cualquier palabra para ver su significado inmediato en español.'}
+                  showFullSpanishToggle={true}
+                />
               </div>
 
-              <button
-                onClick={() => handleSpeak(lesson.readingPassage?.text || '')}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all"
-              >
-                <Volume2 className="w-4 h-4 text-brand-600" />
-                <span>Escuchar Lectura en Voz Alta</span>
-              </button>
+              <div className="pt-1">
+                <button
+                  onClick={() => handleSpeak(lesson.readingPassage?.text || '')}
+                  className="w-full bg-brand-50 hover:bg-brand-100 text-brand-800 text-xs font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <Volume2 className="w-4 h-4 text-brand-600" />
+                  <span>Escuchar Lectura en Voz Alta ({activeSpeed}x)</span>
+                </button>
+              </div>
             </div>
           )}
 
           {lesson.listeningScript && (
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-card space-y-3">
+            <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-card space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">
                   Audio Listening • Acento {lesson.listeningScript.accent}
@@ -273,20 +333,34 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
 
               <h2 className="text-base font-extrabold text-slate-900">{lesson.listeningScript.title}</h2>
 
+              {/* Speed Controller for Listening */}
+              <AudioSpeedControl
+                compact={false}
+                currentRate={activeSpeed}
+                onChange={(r) => setActiveSpeed(r)}
+              />
+
               <button
                 onClick={() => handleSpeak(lesson.listeningScript?.fullText || '', lesson.listeningScript?.accent)}
                 className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all"
               >
                 <Volume2 className="w-5 h-5 animate-pulse-subtle" />
-                <span>Reproducir Conversación de Audio</span>
+                <span>Reproducir Conversación ({activeSpeed}x)</span>
               </button>
 
-              <details className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-150 cursor-pointer">
-                <summary className="font-bold text-slate-700">Ver Transcripción Escrita</summary>
-                <p className="mt-2 whitespace-pre-line text-slate-600 text-[11px] leading-relaxed">
-                  {lesson.listeningScript.fullText}
-                </p>
-              </details>
+              {/* Interactive Audio Transcript with Tap-to-Translate */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-150">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500 block mb-2">
+                  Transcripción Guiada Interactivamente:
+                </span>
+                <InteractiveText
+                  text={lesson.listeningScript.fullText}
+                  spanishTranslation={lesson.listeningScript.spanishTranslation}
+                  pnlTip={lesson.listeningScript.pnlFocus || 'Usa el control de velocidad para escuchar a 0.75x y seguir cada palabra.'}
+                  accent={lesson.listeningScript.accent}
+                  showFullSpanishToggle={true}
+                />
+              </div>
             </div>
           )}
 
@@ -312,19 +386,26 @@ export const LessonPlayerView: React.FC<LessonPlayerViewProps> = ({ lesson, onBa
               <p className="text-xs font-semibold text-slate-600">{currentExercise.instruction}</p>
 
               {currentExercise.audioText && (
-                <button
-                  onClick={() => handleSpeak(currentExercise.audioText || '')}
-                  className="bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-2 transition-all"
-                >
-                  <Volume2 className="w-4 h-4 text-brand-600" />
-                  <span>Escuchar Frase de Audio</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleSpeak(currentExercise.audioText || '')}
+                    className="bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-2 transition-all"
+                  >
+                    <Volume2 className="w-4 h-4 text-brand-600" />
+                    <span>Escuchar Frase ({activeSpeed}x)</span>
+                  </button>
+                </div>
               )}
 
               {currentExercise.question && (
-                <h3 className="text-sm font-extrabold text-slate-900 leading-snug">
-                  {currentExercise.question}
-                </h3>
+                <div className="pt-1">
+                  <InteractiveText
+                    text={currentExercise.question}
+                    spanishTranslation={currentExercise.spanishTranslation}
+                    showFullSpanishToggle={false}
+                    className="font-extrabold text-sm text-slate-900"
+                  />
+                </div>
               )}
 
               {/* Multiple Choice Options */}

@@ -12,6 +12,7 @@ import { SmartReviewView } from './components/review/SmartReviewView';
 import { ProfileView } from './components/profile/ProfileView';
 import { AssessmentModal } from './components/assessment/AssessmentModal';
 import { SettingsModal } from './components/profile/SettingsModal';
+import { NeuroBoosterModal } from './components/common/NeuroBoosterModal';
 import { Lesson } from './types';
 import { CURRICULUM_UNITS } from './data/curriculum';
 
@@ -20,6 +21,7 @@ export const MainAppContent: React.FC = () => {
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isAssessmentOpen, setIsAssessmentOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isNeuroBoosterOpen, setIsNeuroBoosterOpen] = useState<boolean>(false);
 
   const handleNavigate = (tab: TabType, extra?: { lessonId?: string; scenarioId?: string }) => {
     setActiveLesson(null);
@@ -38,11 +40,12 @@ export const MainAppContent: React.FC = () => {
 
   return (
     <MobileContainer>
-      {/* Top Bar with Streak, Level & 4-Hour Daily Study Goal */}
+      {/* Top Bar with Streak, Level, Neuro Booster & 4-Hour Daily Study Goal */}
       {!activeLesson && (
         <TopBar
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenAssessment={() => setIsAssessmentOpen(true)}
+          onOpenNeuroBooster={() => setIsNeuroBoosterOpen(true)}
         />
       )}
 
@@ -63,6 +66,7 @@ export const MainAppContent: React.FC = () => {
               <DashboardView
                 onNavigate={handleNavigate}
                 onOpenAssessment={() => setIsAssessmentOpen(true)}
+                onOpenNeuroBooster={() => setIsNeuroBoosterOpen(true)}
               />
             )}
             {activeTab === 'roadmap' && (
@@ -98,6 +102,9 @@ export const MainAppContent: React.FC = () => {
       )}
       {isSettingsOpen && (
         <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+      )}
+      {isNeuroBoosterOpen && (
+        <NeuroBoosterModal onClose={() => setIsNeuroBoosterOpen(false)} />
       )}
     </MobileContainer>
   );

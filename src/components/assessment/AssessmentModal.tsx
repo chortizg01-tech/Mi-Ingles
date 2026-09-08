@@ -54,12 +54,14 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({ onClose }) => 
 
     const percentage = Math.round((correctCount / PLACEMENT_TEST_QUESTIONS.length) * 100);
 
-    // Determine level placement
-    let assignedLevel: CEFRSubLevel = 'B1.1';
-    if (correctCount >= 7) assignedLevel = 'C1.1';
-    else if (correctCount >= 5) assignedLevel = 'B2.1';
-    else if (correctCount >= 3) assignedLevel = 'B1.2';
-    else assignedLevel = 'B1.1';
+    // Determine level placement (from A2.1 to C1.1)
+    let assignedLevel: CEFRSubLevel = 'A2.1';
+    if (correctCount >= 9) assignedLevel = 'C1.1';
+    else if (correctCount >= 7) assignedLevel = 'B2.1';
+    else if (correctCount >= 5) assignedLevel = 'B1.2';
+    else if (correctCount >= 3) assignedLevel = 'B1.1';
+    else if (correctCount >= 1) assignedLevel = 'A2.2';
+    else assignedLevel = 'A2.1';
 
     const result: AssessmentResult = {
       id: `diag-${Date.now()}`,

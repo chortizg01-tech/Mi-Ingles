@@ -12,9 +12,18 @@ class SpeechService {
   private recognition: any = null;
   private voices: SpeechSynthesisVoice[] = [];
   private isRecognizing: boolean = false;
+  private playbackRate: number = 0.85; // Calibrado para aprendizaje claro sin frustración
 
   constructor() {
     if (typeof window !== 'undefined') {
+      const savedRate = localStorage.getItem('mi_ingles_speech_rate');
+      if (savedRate) {
+        const parsed = parseFloat(savedRate);
+        if (!isNaN(parsed) && parsed >= 0.5 && parsed <= 1.5) {
+          this.playbackRate = parsed;
+        }
+      }
+
       if ('speechSynthesis' in window) {
         this.synth = window.speechSynthesis;
         this.loadVoices();
@@ -34,6 +43,17 @@ class SpeechService {
         this.recognition.interimResults = true;
         this.recognition.lang = 'en-US';
       }
+    }
+  }
+
+  public getPlaybackRate(): number {
+    return this.playbackRate;
+  }
+
+  public setPlaybackRate(rate: number) {
+    this.playbackRate = rate;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mi_ingles_speech_rate', rate.toString());
     }
   }
 
@@ -59,7 +79,7 @@ class SpeechService {
   }
 
   /**
-   * Pronuncia un texto en inglés usando síntesis de voz natural.
+   * Pronuncia un texto en inglés usando síntesis de voz natural a velocidad graduable.
    */
   public speak(
     text: string,
@@ -82,7 +102,8 @@ class SpeechService {
       this.synth.cancel(); // Stop any pending audio
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = options.rate || 0.95; // Slightly slower for better learner comprehension
+      // Usar la velocidad especificada o la velocidad global graduada por el usuario (default: 0.85x)
+      utterance.rate = options.rate !== undefined ? options.rate : this.playbackRate;
       utterance.pitch = options.pitch || 1.0;
 
       // Select matching voice

@@ -1,9 +1,20 @@
 // Tipos principales para el sistema de aprendizaje 'Mi Inglés'
 
 export type CEFRLevel = 'A2' | 'B1' | 'B2' | 'C1';
-export type CEFRSubLevel = 'B1.1' | 'B1.2' | 'B2.1' | 'B2.2' | 'C1.1' | 'C1.2';
+export type CEFRSubLevel = 'A2.1' | 'A2.2' | 'B1.1' | 'B1.2' | 'B2.1' | 'B2.2' | 'C1.1' | 'C1.2';
 
 export type SkillType = 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary';
+
+export interface SavedWord {
+  id: string;
+  term: string;
+  phonetic: string;
+  definition: string;
+  spanish: string;
+  example: string;
+  pnlAnchor?: string;
+  savedAt: string;
+}
 
 export interface UserProfile {
   id: string;
@@ -19,6 +30,8 @@ export interface UserProfile {
   xp: number;
   completedLessonIds: string[];
   masteryScores: Record<SkillType, number>; // 0 to 100
+  savedWords?: SavedWord[];
+  playbackSpeed?: number; // 0.6, 0.75, 0.9, 1.0, 1.25
 }
 
 export type ExerciseType =
@@ -34,6 +47,7 @@ export interface ExerciseOption {
   id: string;
   text: string;
   explanation?: string;
+  spanishText?: string;
 }
 
 export interface Exercise {
@@ -50,6 +64,8 @@ export interface Exercise {
   difficulty: CEFRSubLevel;
   grammarTopic?: string;
   vocabTerms?: string[];
+  pnlTip?: string;
+  spanishTranslation?: string;
 }
 
 export interface Lesson {
@@ -65,6 +81,7 @@ export interface Lesson {
     rules: string[];
     examples: { en: string; es: string }[];
     commonMistakes: string[];
+    neuroChunks?: { chunk: string; meaning: string; pnlVisual: string }[];
   };
   vocabularyItems?: {
     term: string;
@@ -72,19 +89,24 @@ export interface Lesson {
     definition: string;
     example: string;
     spanish: string;
+    pnlAnchor?: string; // Mental/visual association anchor
   }[];
   readingPassage?: {
     title: string;
     text: string;
+    spanishTranslation?: string;
     wordCount: number;
     difficulty: CEFRSubLevel;
+    pnlTip?: string;
   };
   listeningScript?: {
     title: string;
     speakerA: string;
     speakerB?: string;
     fullText: string;
+    spanishTranslation?: string;
     accent: 'US' | 'UK';
+    pnlFocus?: string;
   };
   exercises: Exercise[];
 }
@@ -150,6 +172,7 @@ export interface SpeakingTurn {
   id: string;
   speaker: 'tutor' | 'user';
   text: string;
+  spanishTranslation?: string;
   audioUrl?: string;
   timestamp: string;
   feedback?: {
@@ -173,6 +196,7 @@ export interface SpeakingScenario {
   accent: 'US' | 'UK';
   targetVocab: string[];
   suggestedDurationMinutes: number;
+  pnlTip?: string;
 }
 
 export interface AssessmentQuestion {
@@ -189,7 +213,7 @@ export interface AssessmentQuestion {
 export interface AssessmentResult {
   id: string;
   date: string;
-  type: 'placement' | 'milestone_b1' | 'milestone_b2' | 'milestone_c1';
+  type: 'placement' | 'milestone_a2' | 'milestone_b1' | 'milestone_b2' | 'milestone_c1';
   calculatedLevel: CEFRSubLevel;
   overallScore: number;
   skillBreakdown: Record<SkillType, number>;

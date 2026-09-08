@@ -1,13 +1,14 @@
 import React from 'react';
-import { Flame, Clock, Play, Pause, Settings, Sparkles } from 'lucide-react';
+import { Flame, Clock, Play, Pause, Settings, Sparkles, Brain } from 'lucide-react';
 import { useStudy } from '../../context/StudyContext';
 
 interface TopBarProps {
   onOpenSettings: () => void;
   onOpenAssessment: () => void;
+  onOpenNeuroBooster?: () => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ onOpenSettings, onOpenAssessment }) => {
+export const TopBar: React.FC<TopBarProps> = ({ onOpenSettings, onOpenAssessment, onOpenNeuroBooster }) => {
   const { user, isTimerRunning, toggleStudyTimer } = useStudy();
 
   const hoursStudied = (user.todayStudyMinutes / 60).toFixed(1);
@@ -79,8 +80,18 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenSettings, onOpenAssessment
         </div>
       </div>
 
-      {/* Right: Streak & Settings */}
-      <div className="flex items-center gap-2">
+      {/* Right: Neuro PNL Booster, Streak & Settings */}
+      <div className="flex items-center gap-1.5">
+        {onOpenNeuroBooster && (
+          <button
+            onClick={onOpenNeuroBooster}
+            className="p-1.5 bg-gradient-to-tr from-brand-600 to-indigo-600 text-amber-300 hover:opacity-90 rounded-full shadow-2xs transition-all active:scale-95"
+            title="Gimnasio Neurolingüístico (PNL) y Shadowing"
+          >
+            <Brain className="w-4 h-4" />
+          </button>
+        )}
+
         <div
           className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full text-xs font-bold text-amber-800"
           title="Racha de días de estudio consecutivos"

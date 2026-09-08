@@ -8,7 +8,7 @@ create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
   name text default 'Learner',
   email text,
-  current_level text default 'B1.1',
+  current_level text default 'A2.1',
   target_level text default 'C1',
   streak_days integer default 1,
   last_study_date date default current_date,

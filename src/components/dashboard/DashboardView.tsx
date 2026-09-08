@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ArrowRight, Target, Clock, AlertTriangle, BookOpen, Mic, PenTool, RotateCcw, ChevronRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Target, Clock, AlertTriangle, BookOpen, Mic, PenTool, RotateCcw, ChevronRight, Brain, Headphones } from 'lucide-react';
 import { useStudy } from '../../context/StudyContext';
 import { adaptiveEngine } from '../../services/adaptiveEngine';
 import { TabType } from '../layout/BottomNav';
@@ -7,9 +7,10 @@ import { TabType } from '../layout/BottomNav';
 interface DashboardViewProps {
   onNavigate: (tab: TabType, extra?: { lessonId?: string; scenarioId?: string }) => void;
   onOpenAssessment: () => void;
+  onOpenNeuroBooster?: () => void;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onOpenAssessment }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onOpenAssessment, onOpenNeuroBooster }) => {
   const { user, errorBank } = useStudy();
 
   const progressToC1 = adaptiveEngine.calculateProgressToC1(user);
@@ -31,7 +32,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onOpen
         <div className="flex items-center justify-between">
           <div>
             <span className="text-[11px] font-semibold tracking-wider uppercase text-brand-200">
-              Ruta Intensiva a C1
+              Ruta Intensiva a C1 (Base {user.currentLevel})
             </span>
             <h1 className="text-xl font-extrabold mt-0.5 flex items-center gap-2">
               Nivel {user.currentLevel}
@@ -63,6 +64,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onOpen
           </div>
         </div>
       </div>
+
+      {/* Neurolinguistic PNL Booster Card */}
+      {onOpenNeuroBooster && (
+        <div
+          onClick={onOpenNeuroBooster}
+          className="bg-gradient-to-r from-indigo-950 via-slate-900 to-brand-950 rounded-2xl p-4 text-white shadow-card border border-brand-800/50 cursor-pointer hover:border-brand-500 transition-all flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-brand-500/30 rounded-2xl border border-brand-400/40 text-amber-300">
+              <Brain className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-extrabold text-white">Gimnasio Neurolingüístico (PNL)</span>
+                <span className="text-[9px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.2 rounded">
+                  Neuro-Learning
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-0.5">
+                Práctica de Shadowing vocal, chunks neuronales y anclajes multisensoriales VAK.
+              </p>
+            </div>
+          </div>
+
+          <ChevronRight className="w-5 h-5 text-brand-400 shrink-0" />
+        </div>
+      )}
 
       {/* 4-Hour Daily Study Goal Card */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-card">

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, Sparkles, User, Bot, Play, Square, Award, ArrowRight, RotateCcw, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Volume2, Sparkles, User, Bot, Play, Square, Award, ArrowRight, RotateCcw, AlertCircle, Brain } from 'lucide-react';
 import { SPEAKING_SCENARIOS } from '../../data/curriculum';
 import { SpeakingScenario, SpeakingTurn } from '../../types';
 import { speechService } from '../../services/speechService';
 import { aiService } from '../../services/aiService';
 import { useStudy } from '../../context/StudyContext';
+import { InteractiveText } from '../common/InteractiveText';
+import { AudioSpeedControl } from '../common/AudioSpeedControl';
 
 export const SpeakingView: React.FC = () => {
   const { user, updateMastery, triggerConfetti } = useStudy();
@@ -17,6 +19,7 @@ export const SpeakingView: React.FC = () => {
   const [interimTranscript, setInterimTranscript] = useState<string>('');
   const [activeTurnFeedback, setActiveTurnFeedback] = useState<SpeakingTurn['feedback'] | null>(null);
   const [showFinalReport, setShowFinalReport] = useState<boolean>(false);
+  const [activeSpeed, setActiveSpeed] = useState<number>(speechService.getPlaybackRate());
 
   const turnsEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +45,7 @@ export const SpeakingView: React.FC = () => {
     setIsAiSpeaking(true);
     speechService.speak(selectedScenario.starterPrompt, {
       accent: selectedScenario.accent,
+      rate: activeSpeed,
       onEnd: () => setIsAiSpeaking(false),
       onError: () => setIsAiSpeaking(false)
     });
@@ -143,19 +147,27 @@ export const SpeakingView: React.FC = () => {
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 block">
             Speaking & AI Voice Tutor
           </span>
-          <h1 className="text-xs font-bold text-slate-900 truncate max-w-[200px]">
+          <h1 className="text-xs font-bold text-slate-900 truncate max-w-[150px]">
             {selectedScenario.title}
           </h1>
         </div>
 
-        {isSessionActive && !showFinalReport && (
-          <button
-            onClick={endSession}
-            className="px-3 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all border border-rose-200"
-          >
-            Finalizar Sesión
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <AudioSpeedControl
+            compact={true}
+            currentRate={activeSpeed}
+            onChange={(r) => setActiveSpeed(r)}
+          />
+
+          {isSessionActive && !showFinalReport && (
+            <button
+              onClick={endSession}
+              className="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-[11px] font-bold transition-all border border-rose-200"
+            >
+              Terminar
+            </button>
+          )}
+        </div>
       </div>
 
       {!isSessionActive ? (
@@ -164,7 +176,7 @@ export const SpeakingView: React.FC = () => {
           <div className="text-center space-y-1 mb-2">
             <h2 className="text-base font-extrabold text-slate-900">Selecciona un Escenario de Conversación</h2>
             <p className="text-xs text-slate-500">
-              Habla por voz con la IA en situaciones reales graduadas de B1 a C1.
+              Habla por voz con la IA en situaciones reales graduadas de A2 a C1.
             </p>
           </div>
 
@@ -192,6 +204,13 @@ export const SpeakingView: React.FC = () => {
                 <p className="text-[11px] text-slate-600 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                   {sc.context}
                 </p>
+
+                {sc.pnlTip && (
+                  <div className="text-[10px] text-amber-800 bg-amber-50 p-2 rounded-xl border border-amber-200/80 flex items-start gap-1">
+                    <Brain className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
+                    <span><strong>Tip PNL:</strong> {sc.pnlTip}</span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1">
                   <span>Tutor: <strong className="text-slate-800">{sc.tutorRole}</strong></span>
@@ -237,15 +256,15 @@ export const SpeakingView: React.FC = () => {
 
           {/* Key Takeaways */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
-            <h3 className="text-xs font-bold text-slate-900">Puntos Clave para Nivel C1</h3>
+            <h3 className="text-xs font-bold text-slate-900">Puntos Clave Neurolingüísticos</h3>
             <ul className="text-xs text-slate-700 space-y-2">
               <li className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span>Mantuviste una cadencia continua sin vacilaciones excesivas.</span>
+                <span>Mantuviste una cadencia continua y buena respuesta auditiva.</span>
               </li>
               <li className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 shrink-0"></span>
-                <span>Incorpora más marcadores de discurso como <em>"On the contrary", "Arguably"</em> para pulir el registro.</span>
+                <span>Toca cualquier frase del tutor para ver su traducción y reforzar el vocabulario.</span>
               </li>
             </ul>
           </div>
@@ -280,21 +299,29 @@ export const SpeakingView: React.FC = () => {
                   )}
 
                   <div
-                    className={`max-w-[80%] rounded-2xl p-3 text-xs leading-relaxed ${
+                    className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
                       isTutor
                         ? 'bg-white border border-slate-200 text-slate-800 shadow-2xs'
                         : 'bg-brand-600 text-white shadow-2xs'
                     }`}
                   >
-                    <p>{turn.text}</p>
+                    {isTutor ? (
+                      <InteractiveText
+                        text={turn.text}
+                        showFullSpanishToggle={false}
+                        accent={selectedScenario.accent}
+                      />
+                    ) : (
+                      <p>{turn.text}</p>
+                    )}
 
                     {isTutor && (
                       <button
-                        onClick={() => speechService.speak(turn.text, { accent: selectedScenario.accent })}
+                        onClick={() => speechService.speak(turn.text, { accent: selectedScenario.accent, rate: activeSpeed })}
                         className="mt-1.5 text-[10px] font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1"
                       >
                         <Volume2 className="w-3.5 h-3.5" />
-                        <span>Replay Audio</span>
+                        <span>Replay ({activeSpeed}x)</span>
                       </button>
                     )}
                   </div>
