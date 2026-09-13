@@ -97,21 +97,27 @@ alter table public.speaking_sessions enable row level security;
 alter table public.daily_study_logs enable row level security;
 alter table public.assessment_results enable row level security;
 
--- Políticas de Seguridad RLS
+-- Políticas de Seguridad RLS (Totalmente idempotentes)
+drop policy if exists "Usuarios gestionan su propio perfil" on public.profiles;
 create policy "Usuarios gestionan su propio perfil" on public.profiles
   for all using (auth.uid() = id);
 
+drop policy if exists "Usuarios gestionan su banco de errores" on public.error_bank;
 create policy "Usuarios gestionan su banco de errores" on public.error_bank
   for all using (auth.uid() = user_id);
 
+drop policy if exists "Usuarios gestionan sus envíos de writing" on public.writing_submissions;
 create policy "Usuarios gestionan sus envíos de writing" on public.writing_submissions
   for all using (auth.uid() = user_id);
 
+drop policy if exists "Usuarios gestionan sus sesiones de speaking" on public.speaking_sessions;
 create policy "Usuarios gestionan sus sesiones de speaking" on public.speaking_sessions
   for all using (auth.uid() = user_id);
 
+drop policy if exists "Usuarios gestionan sus logs diarios" on public.daily_study_logs;
 create policy "Usuarios gestionan sus logs diarios" on public.daily_study_logs
   for all using (auth.uid() = user_id);
 
+drop policy if exists "Usuarios gestionan sus evaluaciones" on public.assessment_results;
 create policy "Usuarios gestionan sus evaluaciones" on public.assessment_results
   for all using (auth.uid() = user_id);
