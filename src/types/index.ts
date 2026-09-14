@@ -182,6 +182,13 @@ export interface SpeakingTurn {
     correctedSentence?: string;
     betterPhrasing?: string;
     notes?: string;
+    suggestedResponses?: string[];
+    motivationalNote?: string;
+    grammarErrors?: {
+      original: string;
+      corrected: string;
+      explanation: string;
+    }[];
   };
 }
 
@@ -197,6 +204,20 @@ export interface SpeakingScenario {
   targetVocab: string[];
   suggestedDurationMinutes: number;
   pnlTip?: string;
+  conversationFlow?: {
+    turns: {
+      turnNumber: number;
+      expectedTopics: string[];
+      tutorResponses: {
+        keywords: string[];
+        response: string;
+        followUp?: string;
+      }[];
+      fallbackResponse: string;
+      helpPrompts: string[];
+      suggestedUserResponses: string[];
+    }[];
+  };
 }
 
 export interface AssessmentQuestion {

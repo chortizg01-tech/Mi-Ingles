@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, Sparkles, User, Bot, Play, Square, Award, ArrowRight, RotateCcw, AlertCircle, Brain } from 'lucide-react';
+import { Mic, MicOff, Volume2, Sparkles, User, Bot, Award, AlertCircle, Brain, HelpCircle, ChevronDown, ChevronUp, CheckCircle, MessageCircle, Lightbulb } from 'lucide-react';
 import { SPEAKING_SCENARIOS } from '../../data/curriculum';
 import { SpeakingScenario, SpeakingTurn } from '../../types';
 import { speechService } from '../../services/speechService';
@@ -20,6 +20,9 @@ export const SpeakingView: React.FC = () => {
   const [activeTurnFeedback, setActiveTurnFeedback] = useState<SpeakingTurn['feedback'] | null>(null);
   const [showFinalReport, setShowFinalReport] = useState<boolean>(false);
   const [activeSpeed, setActiveSpeed] = useState<number>(speechService.getPlaybackRate());
+  const [showFeedbackDetails, setShowFeedbackDetails] = useState<boolean>(false);
+  const [suggestedResponses, setSuggestedResponses] = useState<string[]>([]);
+  const [showHelpPrompts, setShowHelpPrompts] = useState<boolean>(false);
 
   const turnsEndRef = useRef<HTMLDivElement>(null);
 
@@ -27,10 +30,41 @@ export const SpeakingView: React.FC = () => {
     turnsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, isAiThinking]);
 
+  // Get initial suggestions when starting a scenario
+  const getInitialSuggestions = (scenario: SpeakingScenario): string[] => {
+    if (scenario.conversationFlow?.turns?.[0]) {
+      return scenario.conversationFlow.turns[0].suggestedUserResponses;
+    }
+    // Generic fallback
+    const contextLower = scenario.context.toLowerCase();
+    if (contextLower.includes('café') || contextLower.includes('coffee')) {
+      return ['Hi! Could I have a latte, please?', 'What do you recommend?', 'Can I see the menu?'];
+    }
+    if (contextLower.includes('direction') || contextLower.includes('station')) {
+      return ['Yes, I\'m looking for the train station.', 'Could you help me find my way?', 'Where is the nearest bus stop?'];
+    }
+    return ['Hello! Nice to meet you.', 'Thank you for your time.', 'Could you tell me more?'];
+  };
+
+  const getHelpPrompts = (): string[] => {
+    if (selectedScenario.conversationFlow?.turns) {
+      const userTurnCount = turns.filter(t => t.speaker === 'user').length;
+      const turnIndex = Math.min(userTurnCount, selectedScenario.conversationFlow.turns.length - 1);
+      return selectedScenario.conversationFlow.turns[turnIndex].helpPrompts;
+    }
+    return [
+      'Try to describe what you want or need in simple words.',
+      'Use short sentences — you don\'t need to be perfect!',
+      'Start with: "I would like..." or "Could you...?"'
+    ];
+  };
+
   const startScenario = () => {
     setIsSessionActive(true);
     setShowFinalReport(false);
     setActiveTurnFeedback(null);
+    setShowFeedbackDetails(false);
+    setShowHelpPrompts(false);
 
     const initialTurn: SpeakingTurn = {
       id: `turn-${Date.now()}`,
@@ -40,6 +74,7 @@ export const SpeakingView: React.FC = () => {
     };
 
     setTurns([initialTurn]);
+    setSuggestedResponses(getInitialSuggestions(selectedScenario));
 
     // Speak initial prompt
     setIsAiSpeaking(true);
@@ -57,6 +92,7 @@ export const SpeakingView: React.FC = () => {
       setIsListening(false);
     } else {
       setInterimTranscript('');
+      setShowHelpPrompts(false);
       const started = speechService.startListening({
         onInterimResult: (text) => setInterimTranscript(text),
         onFinalResult: (finalText) => {
@@ -77,6 +113,11 @@ export const SpeakingView: React.FC = () => {
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setShowHelpPrompts(false);
+    handleUserSpeechFinished(suggestion);
+  };
+
   const handleUserSpeechFinished = async (spokenText: string) => {
     if (!spokenText.trim()) return;
 
@@ -90,6 +131,8 @@ export const SpeakingView: React.FC = () => {
     const newHistory = [...turns, userTurn];
     setTurns(newHistory);
     setIsAiThinking(true);
+    setSuggestedResponses([]);
+    setShowFeedbackDetails(false);
 
     try {
       const response = await aiService.generateSpeakingTurn(
@@ -114,6 +157,11 @@ export const SpeakingView: React.FC = () => {
       setTurns([...newHistory, tutorTurn]);
       setIsAiThinking(false);
 
+      // Update suggested responses for next turn
+      if (response.feedback.suggestedResponses && response.feedback.suggestedResponses.length > 0) {
+        setSuggestedResponses(response.feedback.suggestedResponses);
+      }
+
       // Speak tutor response
       setIsAiSpeaking(true);
       speechService.speak(response.tutorResponse, {
@@ -137,6 +185,37 @@ export const SpeakingView: React.FC = () => {
     setIsAiSpeaking(false);
     setShowFinalReport(true);
     triggerConfetti();
+  };
+
+  // Calculate real session scores from feedback
+  const getSessionScores = () => {
+    const userTurns = turns.filter(t => t.speaker === 'user' && t.feedback);
+    if (userTurns.length === 0) return { fluency: 80, pronunciation: 80, grammar: 85 };
+
+    const avgFluency = Math.round(userTurns.reduce((sum, t) => sum + (t.feedback?.fluencyScore || 80), 0) / userTurns.length);
+    const avgPronunciation = Math.round(userTurns.reduce((sum, t) => sum + (t.feedback?.pronunciationScore || 80), 0) / userTurns.length);
+    const avgGrammar = Math.round(userTurns.reduce((sum, t) => sum + (t.feedback?.grammarScore || 85), 0) / userTurns.length);
+
+    return { fluency: avgFluency, pronunciation: avgPronunciation, grammar: avgGrammar };
+  };
+
+  // Get all grammar errors from the session for the final report
+  const getSessionErrors = () => {
+    const userTurns = turns.filter(t => t.speaker === 'user' && t.feedback?.grammarErrors?.length);
+    const allErrors: { original: string; corrected: string; explanation: string }[] = [];
+    for (const t of userTurns) {
+      if (t.feedback?.grammarErrors) {
+        allErrors.push(...t.feedback.grammarErrors);
+      }
+    }
+    return allErrors;
+  };
+
+  // Get conversation progress
+  const getConversationProgress = () => {
+    const userTurnCount = turns.filter(t => t.speaker === 'user').length;
+    const totalTurns = selectedScenario.conversationFlow?.turns?.length || 4;
+    return { current: userTurnCount, total: totalTurns };
   };
 
   return (
@@ -238,21 +317,52 @@ export const SpeakingView: React.FC = () => {
               Has completado la simulación con {turns.filter(t => t.speaker === 'user').length} intervenciones habladas.
             </p>
 
-            <div className="grid grid-cols-3 gap-2 pt-2 text-slate-900">
-              <div className="bg-white p-2.5 rounded-2xl">
-                <span className="text-[10px] text-slate-500 block font-semibold">Fluidez</span>
-                <span className="text-base font-extrabold text-emerald-600">88%</span>
-              </div>
-              <div className="bg-white p-2.5 rounded-2xl">
-                <span className="text-[10px] text-slate-500 block font-semibold">Pronunciación</span>
-                <span className="text-base font-extrabold text-brand-600">85%</span>
-              </div>
-              <div className="bg-white p-2.5 rounded-2xl">
-                <span className="text-[10px] text-slate-500 block font-semibold">Naturalidad</span>
-                <span className="text-base font-extrabold text-amber-600">90%</span>
-              </div>
-            </div>
+            {(() => {
+              const scores = getSessionScores();
+              return (
+                <div className="grid grid-cols-3 gap-2 pt-2 text-slate-900">
+                  <div className="bg-white p-2.5 rounded-2xl">
+                    <span className="text-[10px] text-slate-500 block font-semibold">Fluidez</span>
+                    <span className="text-base font-extrabold text-emerald-600">{scores.fluency}%</span>
+                  </div>
+                  <div className="bg-white p-2.5 rounded-2xl">
+                    <span className="text-[10px] text-slate-500 block font-semibold">Pronunciación</span>
+                    <span className="text-base font-extrabold text-brand-600">{scores.pronunciation}%</span>
+                  </div>
+                  <div className="bg-white p-2.5 rounded-2xl">
+                    <span className="text-[10px] text-slate-500 block font-semibold">Gramática</span>
+                    <span className="text-base font-extrabold text-amber-600">{scores.grammar}%</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
+
+          {/* Grammar Errors Summary */}
+          {(() => {
+            const errors = getSessionErrors();
+            if (errors.length === 0) return null;
+            return (
+              <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
+                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                  Errores Detectados y Correcciones
+                </h3>
+                <ul className="text-xs text-slate-700 space-y-2">
+                  {errors.map((err, i) => (
+                    <li key={i} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
+                      <div className="flex items-start gap-2">
+                        <span className="text-rose-500 font-bold line-through text-[11px]">{err.original}</span>
+                        <span className="text-[11px] text-slate-400">→</span>
+                        <span className="text-emerald-600 font-bold text-[11px]">{err.corrected}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">{err.explanation}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()}
 
           {/* Key Takeaways */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
@@ -266,6 +376,12 @@ export const SpeakingView: React.FC = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 shrink-0"></span>
                 <span>Toca cualquier frase del tutor para ver su traducción y reforzar el vocabulario.</span>
               </li>
+              {getSessionErrors().length > 0 && (
+                <li className="bg-amber-50 p-2.5 rounded-xl border border-amber-200 flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
+                  <span>Revisa los errores corregidos arriba — practica las frases correctas en voz alta para reforzarlas.</span>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -282,6 +398,25 @@ export const SpeakingView: React.FC = () => {
       ) : (
         /* LIVE VOICE ROOM */
         <div className="flex-1 flex flex-col justify-between overflow-hidden">
+
+          {/* Conversation Progress Bar */}
+          {selectedScenario.conversationFlow && (
+            <div className="bg-white border-b border-slate-100 px-4 py-2">
+              <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                <span className="font-semibold">Progreso de conversación</span>
+                <span className="font-bold text-brand-600">
+                  {getConversationProgress().current}/{getConversationProgress().total} turnos
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-1.5">
+                <div
+                  className="bg-gradient-to-r from-brand-500 to-emerald-500 h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, (getConversationProgress().current / getConversationProgress().total) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Conversation Chat Bubbles */}
           <div className="flex-1 p-4 overflow-y-auto space-y-3">
             {turns.map(turn => {
@@ -324,6 +459,17 @@ export const SpeakingView: React.FC = () => {
                         <span>Replay ({activeSpeed}x)</span>
                       </button>
                     )}
+
+                    {/* Inline grammar correction for user turns */}
+                    {!isTutor && turn.feedback?.correctedSentence && (
+                      <div className="mt-2 pt-2 border-t border-white/20 text-[10px]">
+                        <div className="flex items-center gap-1 text-amber-200 font-semibold mb-0.5">
+                          <AlertCircle className="w-3 h-3" />
+                          <span>Corrección:</span>
+                        </div>
+                        <p className="text-white/90 italic">"{turn.feedback.correctedSentence}"</p>
+                      </div>
+                    )}
                   </div>
 
                   {!isTutor && (
@@ -353,13 +499,126 @@ export const SpeakingView: React.FC = () => {
             <div ref={turnsEndRef} />
           </div>
 
-          {/* Turn Feedback Card */}
+          {/* Turn Feedback Card (expanded) */}
           {activeTurnFeedback && (
-            <div className="bg-amber-50/90 border-t border-amber-200 px-4 py-2 text-[11px] text-amber-900 flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="font-bold">Feedback de tu última respuesta: </span>
-                {activeTurnFeedback.betterPhrasing || activeTurnFeedback.notes || '¡Muy buena respuesta y fluidez!'}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-t border-amber-200 px-4 py-2.5 space-y-2">
+              {/* Main feedback line */}
+              <div className="flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-amber-900">
+                      Feedback de tu última respuesta
+                    </span>
+                    <button
+                      onClick={() => setShowFeedbackDetails(!showFeedbackDetails)}
+                      className="text-amber-600 hover:text-amber-700"
+                    >
+                      {showFeedbackDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-amber-800 mt-0.5">
+                    {activeTurnFeedback.notes || '¡Muy buena respuesta y fluidez!'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Expanded details */}
+              {showFeedbackDetails && (
+                <div className="space-y-2 pt-1 border-t border-amber-200/50">
+                  {/* Scores */}
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-white/60 rounded-xl p-1.5 text-center">
+                      <span className="text-[9px] text-slate-500 block">Fluidez</span>
+                      <span className="text-[11px] font-extrabold text-emerald-600">{activeTurnFeedback.fluencyScore}%</span>
+                    </div>
+                    <div className="flex-1 bg-white/60 rounded-xl p-1.5 text-center">
+                      <span className="text-[9px] text-slate-500 block">Pronunciación</span>
+                      <span className="text-[11px] font-extrabold text-brand-600">{activeTurnFeedback.pronunciationScore}%</span>
+                    </div>
+                    <div className="flex-1 bg-white/60 rounded-xl p-1.5 text-center">
+                      <span className="text-[9px] text-slate-500 block">Gramática</span>
+                      <span className="text-[11px] font-extrabold text-amber-600">{activeTurnFeedback.grammarScore}%</span>
+                    </div>
+                  </div>
+
+                  {/* Grammar errors */}
+                  {activeTurnFeedback.grammarErrors && activeTurnFeedback.grammarErrors.length > 0 && (
+                    <div className="space-y-1.5">
+                      {activeTurnFeedback.grammarErrors.map((err, i) => (
+                        <div key={i} className="bg-white/70 rounded-xl p-2 text-[10px]">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-rose-500 line-through font-semibold">{err.original}</span>
+                            <span className="text-slate-400">→</span>
+                            <span className="text-emerald-600 font-semibold">{err.corrected}</span>
+                          </div>
+                          <p className="text-slate-500 mt-0.5">{err.explanation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Better phrasing */}
+                  {activeTurnFeedback.betterPhrasing && (
+                    <div className="bg-blue-50/80 rounded-xl p-2 text-[10px] text-blue-800 flex items-start gap-1.5">
+                      <Lightbulb className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                      <span>{activeTurnFeedback.betterPhrasing}</span>
+                    </div>
+                  )}
+
+                  {/* Motivational note */}
+                  {activeTurnFeedback.motivationalNote && (
+                    <div className="bg-emerald-50/80 rounded-xl p-2 text-[10px] text-emerald-800 flex items-start gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{activeTurnFeedback.motivationalNote}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Help Prompts Overlay */}
+          {showHelpPrompts && (
+            <div className="bg-blue-50 border-t border-blue-200 px-4 py-3 space-y-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-800">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>💡 Pistas para tu respuesta:</span>
+              </div>
+              <div className="space-y-1.5">
+                {getHelpPrompts().map((prompt, i) => (
+                  <div key={i} className="bg-white rounded-xl p-2.5 text-[11px] text-blue-900 border border-blue-100 flex items-start gap-2">
+                    <MessageCircle className="w-3 h-3 text-blue-500 shrink-0 mt-0.5" />
+                    <span>{prompt}</span>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowHelpPrompts(false)}
+                className="text-[10px] text-blue-600 font-semibold hover:text-blue-700"
+              >
+                Cerrar pistas
+              </button>
+            </div>
+          )}
+
+          {/* Suggested Responses Chips */}
+          {suggestedResponses.length > 0 && !isAiThinking && !isListening && (
+            <div className="bg-white/90 border-t border-slate-100 px-4 py-2.5 space-y-1.5">
+              <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
+                <Lightbulb className="w-3 h-3 text-amber-500" />
+                Sugerencias — toca una para responder:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedResponses.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSuggestionClick(s)}
+                    className="bg-brand-50 hover:bg-brand-100 active:bg-brand-200 text-brand-800 text-[11px] font-medium px-3 py-1.5 rounded-2xl border border-brand-200 transition-all hover:shadow-sm active:scale-95"
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -367,6 +626,15 @@ export const SpeakingView: React.FC = () => {
           {/* Voice Controls Bottom Area */}
           <div className="bg-white border-t border-slate-200 p-4 flex flex-col items-center gap-3">
             <div className="flex items-center gap-4">
+              {/* Help Button */}
+              <button
+                onClick={() => setShowHelpPrompts(!showHelpPrompts)}
+                className="w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-all border border-blue-200"
+                title="No sé qué decir"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+
               {/* Mic Push to Talk */}
               <button
                 onClick={handleToggleMic}
@@ -385,14 +653,19 @@ export const SpeakingView: React.FC = () => {
                   <Mic className="w-7 h-7" />
                 )}
               </button>
+
+              {/* Placeholder for symmetry */}
+              <div className="w-10 h-10" />
             </div>
 
-            <span className="text-[11px] font-semibold text-slate-500">
+            <span className="text-[11px] font-semibold text-slate-500 text-center">
               {isListening
                 ? '🎙️ Escuchando... habla en inglés (haz clic para detener)'
                 : isAiSpeaking
                 ? '🔊 El tutor está hablando...'
-                : 'Pulsa el micrófono para responder en voz alta'}
+                : isAiThinking
+                ? '⏳ Procesando tu respuesta...'
+                : '🎤 Pulsa el micrófono o toca una sugerencia'}
             </span>
           </div>
         </div>

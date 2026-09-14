@@ -1,5 +1,5 @@
 // Servicio de Voz: Speech-to-Text (STT) y Text-to-Speech (TTS)
-// Corregido para bugs de Chrome/Edge con SpeechSynthesis
+// Compatible con iOS Safari, Chrome Android, Chrome Desktop, Edge, Firefox
 
 export interface VoiceOption {
   voice: SpeechSynthesisVoice;
@@ -13,18 +13,20 @@ class SpeechService {
   private recognition: any = null;
   private voices: SpeechSynthesisVoice[] = [];
   private isRecognizing: boolean = false;
-  private playbackRate: number = 0.85; // Calibrado para aprendizaje claro sin frustración
-  private voicesReady: Promise<void>;
+  private playbackRate: number = 0.85;
   private isSpeaking: boolean = false;
-  private audioUnlocked: boolean = false;
-  private currentChainAbort: AbortController | null = null;
+  private pendingChunks: string[] = [];
+  private currentOptions: {
+    rate: number;
+    pitch: number;
+    lang: string;
+    voice: SpeechSynthesisVoice | null;
+    onEnd?: () => void;
+    onError?: (err: any) => void;
+  } | null = null;
+  private resolveCurrentSpeak: (() => void) | null = null;
 
   constructor() {
-    let resolveVoices: () => void;
-    this.voicesReady = new Promise((resolve) => {
-      resolveVoices = resolve;
-    });
-
     if (typeof window !== 'undefined') {
       const savedRate = localStorage.getItem('mi_ingles_speech_rate');
       if (savedRate) {
@@ -36,44 +38,19 @@ class SpeechService {
 
       if ('speechSynthesis' in window) {
         this.synth = window.speechSynthesis;
-
-        // Cargar voces con múltiples intentos (bug de Chrome: getVoices() retorna [] la primera vez)
-        const tryLoadVoices = () => {
-          if (!this.synth) return;
-          const available = this.synth.getVoices();
-          if (available.length > 0) {
-            this.voices = available.filter(v => v.lang.startsWith('en'));
-            resolveVoices!();
-          }
-        };
-
-        tryLoadVoices();
+        this.loadVoices();
 
         if (this.synth.onvoiceschanged !== undefined) {
-          this.synth.onvoiceschanged = () => {
-            tryLoadVoices();
-          };
+          this.synth.onvoiceschanged = () => this.loadVoices();
         }
 
-        // Fallback: reintentar carga de voces con timeout progresivo
-        const retryLoadVoices = (attempt: number) => {
-          if (this.voices.length > 0 || attempt > 10) {
-            if (this.voices.length === 0) resolveVoices!(); // Resolver igualmente para no bloquear
-            return;
+        // Chrome bug: la síntesis se pausa silenciosamente después de ~15s
+        // Llamar resume() periódicamente mientras se reproduce
+        setInterval(() => {
+          if (this.synth && this.isSpeaking) {
+            this.synth.resume();
           }
-          setTimeout(() => {
-            tryLoadVoices();
-            retryLoadVoices(attempt + 1);
-          }, attempt * 100); // 100ms, 200ms, 300ms...
-        };
-        retryLoadVoices(1);
-
-        // Chrome bug fix: mantener el synth "vivo" con un resume periódico
-        // Chrome pausa la síntesis internamente después de ~15 segundos
-        this.startChromeWorkaround();
-
-      } else {
-        resolveVoices!();
+        }, 5000);
       }
 
       // Initialize Web Speech Recognition
@@ -87,54 +64,15 @@ class SpeechService {
         this.recognition.interimResults = true;
         this.recognition.lang = 'en-US';
       }
-
-      // Desbloquear audio con el primer gesto del usuario
-      this.setupAudioUnlock();
-    } else {
-      resolveVoices!();
     }
   }
 
-  /**
-   * Chrome tiene un bug donde pausa internamente la síntesis de voz 
-   * después de ~15 segundos. Este workaround llama a resume() periódicamente
-   * mientras hay audio reproduciéndose.
-   */
-  private startChromeWorkaround() {
-    if (typeof window === 'undefined' || !this.synth) return;
-
-    setInterval(() => {
-      if (this.synth && this.isSpeaking) {
-        // Chrome bug: la síntesis se pausa silenciosamente
-        // Llamar a resume() la reactiva
-        this.synth.resume();
-      }
-    }, 5000); // Cada 5 segundos
-  }
-
-  /**
-   * Algunos navegadores requieren que la primera interacción con
-   * SpeechSynthesis sea dentro de un gesto del usuario.
-   * Este método reproduce un utterance silencioso al primer click/touch.
-   */
-  private setupAudioUnlock() {
-    const unlock = () => {
-      if (this.audioUnlocked) return;
-      this.audioUnlocked = true;
-
-      if (this.synth) {
-        // Utterance vacío para "desbloquear" el contexto de audio
-        const silentUtterance = new SpeechSynthesisUtterance('');
-        silentUtterance.volume = 0;
-        this.synth.speak(silentUtterance);
-      }
-
-      document.removeEventListener('click', unlock);
-      document.removeEventListener('touchstart', unlock);
-    };
-
-    document.addEventListener('click', unlock, { once: false });
-    document.addEventListener('touchstart', unlock, { once: false });
+  private loadVoices() {
+    if (!this.synth) return;
+    const all = this.synth.getVoices();
+    if (all.length > 0) {
+      this.voices = all.filter(v => v.lang.startsWith('en'));
+    }
   }
 
   public getPlaybackRate(): number {
@@ -165,17 +103,16 @@ class SpeechService {
   }
 
   /**
-   * Selecciona la mejor voz disponible para el acento solicitado.
+   * Selecciona la mejor voz inglesa disponible.
+   * Intenta recargar voces si están vacías (bug de Chrome).
    */
   private selectVoice(accent: 'US' | 'UK' | undefined): SpeechSynthesisVoice | null {
-    const targetLang = accent === 'UK' ? 'en-GB' : 'en-US';
-
-    // Intentar cargar voces una vez más si están vacías
-    if (this.voices.length === 0 && this.synth) {
-      const available = this.synth.getVoices();
-      this.voices = available.filter(v => v.lang.startsWith('en'));
+    // Intentar cargar voces si aún no se han cargado
+    if (this.voices.length === 0) {
+      this.loadVoices();
     }
 
+    const targetLang = accent === 'UK' ? 'en-GB' : 'en-US';
     return (
       this.voices.find(v => v.lang === targetLang) ||
       this.voices.find(v => v.lang.startsWith('en')) ||
@@ -184,17 +121,13 @@ class SpeechService {
   }
 
   /**
-   * Divide texto largo en chunks por oraciones para evitar el bug de Chrome
-   * donde utterances de más de ~15 segundos se cortan silenciosamente.
+   * Divide texto largo en chunks para evitar que Chrome
+   * corte silenciosamente utterances largos (>15 segundos).
    */
   private splitTextIntoChunks(text: string): string[] {
-    // Si el texto es corto, no dividir
     if (text.length <= 200) return [text];
 
-    // Dividir por oraciones (punto, signo de interrogación, signo de exclamación)
     const sentences = text.match(/[^.!?]+[.!?]+[\s]*/g) || [text];
-
-    // Agrupar oraciones en chunks de ~180 caracteres máximo
     const chunks: string[] = [];
     let currentChunk = '';
 
@@ -215,8 +148,68 @@ class SpeechService {
   }
 
   /**
-   * Pronuncia un texto en inglés usando síntesis de voz natural a velocidad graduable.
-   * Corregido para funcionar en Chrome, Edge, Safari y Firefox.
+   * Reproduce el siguiente chunk pendiente en la cola.
+   * Se llama desde onend del chunk anterior.
+   */
+  private speakNextChunk() {
+    if (!this.synth || !this.currentOptions || this.pendingChunks.length === 0) {
+      this.isSpeaking = false;
+      if (this.currentOptions?.onEnd) this.currentOptions.onEnd();
+      if (this.resolveCurrentSpeak) this.resolveCurrentSpeak();
+      this.currentOptions = null;
+      this.resolveCurrentSpeak = null;
+      return;
+    }
+
+    const chunkText = this.pendingChunks.shift()!;
+    const opts = this.currentOptions;
+
+    const utterance = new SpeechSynthesisUtterance(chunkText);
+    utterance.rate = opts.rate;
+    utterance.pitch = opts.pitch;
+    utterance.lang = opts.lang;
+
+    if (opts.voice) {
+      utterance.voice = opts.voice;
+    }
+
+    utterance.onend = () => {
+      if (this.pendingChunks.length > 0) {
+        // Pequeña pausa entre chunks para naturalidad
+        setTimeout(() => this.speakNextChunk(), 60);
+      } else {
+        this.isSpeaking = false;
+        if (opts.onEnd) opts.onEnd();
+        if (this.resolveCurrentSpeak) this.resolveCurrentSpeak();
+        this.currentOptions = null;
+        this.resolveCurrentSpeak = null;
+      }
+    };
+
+    utterance.onerror = (err) => {
+      console.error('Speech synthesis error:', err);
+      // Intentar continuar con el siguiente chunk
+      if (this.pendingChunks.length > 0) {
+        setTimeout(() => this.speakNextChunk(), 60);
+      } else {
+        this.isSpeaking = false;
+        if (opts.onError) opts.onError(err);
+        if (this.resolveCurrentSpeak) this.resolveCurrentSpeak();
+        this.currentOptions = null;
+        this.resolveCurrentSpeak = null;
+      }
+    };
+
+    this.synth.speak(utterance);
+  }
+
+  /**
+   * Pronuncia un texto en inglés usando síntesis de voz natural.
+   * 
+   * IMPORTANTE: Este método es SÍNCRONO en su llamada a synth.speak()
+   * para garantizar compatibilidad con iOS Safari y Chrome Android,
+   * que requieren que speak() se ejecute directamente dentro del
+   * gesto del usuario (click/touch) sin delays async intermedios.
    */
   public speak(
     text: string,
@@ -228,7 +221,7 @@ class SpeechService {
       onError?: (err: any) => void;
     } = {}
   ): Promise<void> {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       if (!this.synth) {
         console.warn('SpeechSynthesis is not supported in this browser.');
         if (options.onEnd) options.onEnd();
@@ -236,106 +229,88 @@ class SpeechService {
         return;
       }
 
-      // Abortar cualquier cadena de chunks anterior
-      if (this.currentChainAbort) {
-        this.currentChainAbort.abort();
-      }
-      const abortController = new AbortController();
-      this.currentChainAbort = abortController;
-
-      // 1. Cancelar cualquier audio previo
+      // 1. Cancelar cualquier audio previo (síncrono)
       this.synth.cancel();
       this.isSpeaking = false;
-
-      // 2. Esperar un breve momento después de cancel() para evitar el bug de Chrome
-      //    donde cancel() seguido inmediatamente por speak() causa que el audio no suene
-      await new Promise(r => setTimeout(r, 100));
-
-      // Verificar si se abortó durante la espera
-      if (abortController.signal.aborted) {
-        if (options.onEnd) options.onEnd();
-        resolve();
-        return;
+      this.pendingChunks = [];
+      this.currentOptions = null;
+      if (this.resolveCurrentSpeak) {
+        this.resolveCurrentSpeak();
       }
 
-      // 3. Esperar a que las voces estén disponibles (con timeout de 1s)
-      await Promise.race([
-        this.voicesReady,
-        new Promise<void>(r => setTimeout(r, 1000))
-      ]);
-
-      if (abortController.signal.aborted) {
-        if (options.onEnd) options.onEnd();
-        resolve();
-        return;
-      }
-
-      // 4. Dividir texto largo en chunks para evitar cortes silenciosos de Chrome
-      const chunks = this.splitTextIntoChunks(text);
+      // 2. Preparar configuración (síncrono)
       const targetLang = options.accent === 'UK' ? 'en-GB' : 'en-US';
       const selectedVoice = this.selectVoice(options.accent);
       const rate = options.rate !== undefined ? options.rate : this.playbackRate;
 
-      // 5. Reproducir cada chunk secuencialmente
-      const speakChunk = (index: number) => {
-        if (abortController.signal.aborted) {
+      // 3. Dividir texto en chunks si es largo
+      const chunks = this.splitTextIntoChunks(text);
+
+      // 4. Guardar configuración para los chunks siguientes
+      this.currentOptions = {
+        rate,
+        pitch: options.pitch || 1.0,
+        lang: targetLang,
+        voice: selectedVoice,
+        onEnd: options.onEnd,
+        onError: options.onError
+      };
+      this.resolveCurrentSpeak = resolve;
+
+      // 5. Crear y hablar el PRIMER chunk SINCRÓNICAMENTE (crítico para móviles)
+      //    Los chunks restantes se encolan y se procesan via onend
+      const firstChunk = chunks.shift()!;
+      this.pendingChunks = chunks; // los restantes
+
+      const utterance = new SpeechSynthesisUtterance(firstChunk);
+      utterance.rate = rate;
+      utterance.pitch = options.pitch || 1.0;
+      utterance.lang = targetLang;
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      utterance.onend = () => {
+        if (this.pendingChunks.length > 0) {
+          setTimeout(() => this.speakNextChunk(), 60);
+        } else {
           this.isSpeaking = false;
           if (options.onEnd) options.onEnd();
+          this.currentOptions = null;
+          this.resolveCurrentSpeak = null;
           resolve();
-          return;
         }
-
-        if (index >= chunks.length) {
-          this.isSpeaking = false;
-          if (options.onEnd) options.onEnd();
-          resolve();
-          return;
-        }
-
-        const utterance = new SpeechSynthesisUtterance(chunks[index]);
-        utterance.rate = rate;
-        utterance.pitch = options.pitch || 1.0;
-        utterance.lang = targetLang;
-
-        if (selectedVoice) {
-          utterance.voice = selectedVoice;
-        }
-
-        utterance.onend = () => {
-          // Pequeña pausa entre chunks para naturalidad
-          if (index + 1 < chunks.length) {
-            setTimeout(() => speakChunk(index + 1), 80);
-          } else {
-            this.isSpeaking = false;
-            if (options.onEnd) options.onEnd();
-            resolve();
-          }
-        };
-
-        utterance.onerror = (err) => {
-          console.error('Speech synthesis error on chunk', index, ':', err);
-          // Intentar continuar con el siguiente chunk en vez de abortar todo
-          if (index + 1 < chunks.length) {
-            setTimeout(() => speakChunk(index + 1), 80);
-          } else {
-            this.isSpeaking = false;
-            if (options.onError) options.onError(err);
-            resolve();
-          }
-        };
-
-        this.isSpeaking = true;
-        this.synth!.speak(utterance);
       };
 
-      speakChunk(0);
+      utterance.onerror = (err) => {
+        console.error('Speech synthesis error:', err);
+        if (this.pendingChunks.length > 0) {
+          setTimeout(() => this.speakNextChunk(), 60);
+        } else {
+          this.isSpeaking = false;
+          if (options.onError) options.onError(err);
+          this.currentOptions = null;
+          this.resolveCurrentSpeak = null;
+          resolve();
+        }
+      };
+
+      // 6. ¡REPRODUCIR! - Esto DEBE ser síncrono, directo en el click handler
+      this.isSpeaking = true;
+      this.synth.speak(utterance);
     });
   }
 
   public stopSpeaking() {
-    if (this.currentChainAbort) {
-      this.currentChainAbort.abort();
-      this.currentChainAbort = null;
+    this.pendingChunks = [];
+    if (this.currentOptions?.onEnd) {
+      this.currentOptions.onEnd();
+    }
+    this.currentOptions = null;
+    if (this.resolveCurrentSpeak) {
+      this.resolveCurrentSpeak();
+      this.resolveCurrentSpeak = null;
     }
     if (this.synth) {
       this.synth.cancel();

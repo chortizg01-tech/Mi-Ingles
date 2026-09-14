@@ -824,7 +824,164 @@ export const SPEAKING_SCENARIOS: SpeakingScenario[] = [
     accent: 'US',
     targetVocab: ['Order', 'Latte', 'Croissant', 'For here', 'Total'],
     suggestedDurationMinutes: 8,
-    pnlTip: 'Usa la fórmula automática: "Hi! Could I please have a [bebida] and a [comida]?"'
+    pnlTip: 'Usa la fórmula automática: "Hi! Could I please have a [bebida] and a [comida]?"',
+    conversationFlow: {
+      turns: [
+        {
+          turnNumber: 1,
+          expectedTopics: ['ordering', 'coffee', 'drink', 'food'],
+          tutorResponses: [
+            {
+              keywords: ['coffee', 'latte', 'cappuccino', 'espresso', 'americano', 'mocha'],
+              response: 'Great choice! Would you like that hot or iced? And what size — small, medium, or large?',
+              followUp: 'We also have oat milk and almond milk if you prefer a dairy-free option.'
+            },
+            {
+              keywords: ['tea', 'green tea', 'black tea', 'chai'],
+              response: 'Sure! We have green tea, chamomile, and English breakfast. Which one sounds good? And would you like honey with that?'
+            },
+            {
+              keywords: ['menu', 'what do you have', 'options', 'recommend'],
+              response: 'Of course! Our most popular drinks are the caramel latte, the iced americano, and our house blend drip coffee. For food, we have croissants, muffins, and avocado toast. What sounds good to you?'
+            },
+            {
+              keywords: ['hello', 'hi', 'hey', 'good morning', 'morning'],
+              response: 'Hey there! Good morning! So, are you in the mood for coffee, tea, or maybe a refreshing juice today?'
+            }
+          ],
+          fallbackResponse: 'No worries! Take your time. Would you like to start with a coffee or a tea? We also have fresh juices and smoothies!',
+          helpPrompts: [
+            'Try saying: "Hi! Could I have a latte, please?"',
+            'You could say: "What do you recommend?"',
+            'Try: "Can I see the menu, please?"'
+          ],
+          suggestedUserResponses: [
+            'Hi! Could I have a latte, please?',
+            'What do you recommend?',
+            'Can I see the menu?'
+          ]
+        },
+        {
+          turnNumber: 2,
+          expectedTopics: ['size', 'milk', 'hot', 'cold', 'food'],
+          tutorResponses: [
+            {
+              keywords: ['hot', 'warm'],
+              response: 'Perfect, one hot drink coming right up! Would you like to add anything to eat? We have fresh croissants and blueberry muffins today.'
+            },
+            {
+              keywords: ['iced', 'cold', 'ice'],
+              response: 'Nice! Iced is perfect for today. Would you like any food with that? Our chocolate croissant is really popular!'
+            },
+            {
+              keywords: ['large', 'big', 'grande'],
+              response: 'A large one, got it! Would you also like something to eat? We just baked some fresh pastries.'
+            },
+            {
+              keywords: ['small', 'medium', 'regular'],
+              response: 'Got it! And would you like to pair that with a pastry or a sandwich? Our avocado toast is a customer favorite!'
+            },
+            {
+              keywords: ['croissant', 'muffin', 'toast', 'sandwich', 'pastry', 'food', 'eat'],
+              response: 'Excellent choice! That goes perfectly with your drink. Will that be for here or to go?'
+            }
+          ],
+          fallbackResponse: 'That sounds lovely! And would you also like something to eat? We have croissants, muffins, and sandwiches.',
+          helpPrompts: [
+            'Say the size: "A medium one, please" or "Large, please"',
+            'Talk about temperature: "Hot, please" or "Iced, please"',
+            'Order food: "And a croissant, please"'
+          ],
+          suggestedUserResponses: [
+            'A medium iced latte, please.',
+            'Hot, please. And a croissant.',
+            'Large, with oat milk.'
+          ]
+        },
+        {
+          turnNumber: 3,
+          expectedTopics: ['here', 'go', 'takeaway', 'stay', 'pay'],
+          tutorResponses: [
+            {
+              keywords: ['here', 'stay', 'sit', 'inside', 'dine in'],
+              response: 'For here, awesome! I\'ll bring it right to your table. Your total comes to $7.50. Cash or card?'
+            },
+            {
+              keywords: ['go', 'takeaway', 'take out', 'take away', 'leave'],
+              response: 'To go, got it! I\'ll have that ready in just a minute. Your total is $7.50. How would you like to pay?'
+            },
+            {
+              keywords: ['card', 'credit', 'debit', 'apple pay', 'pay'],
+              response: 'Sure! Just tap your card right here. Your receipt is printing. Have a wonderful day!'
+            },
+            {
+              keywords: ['cash', 'bill', 'change'],
+              response: 'Cash works! Out of ten dollars... here\'s your change, $2.50. Your order will be ready in a moment!'
+            }
+          ],
+          fallbackResponse: 'Great! Will that be for here or to go?',
+          helpPrompts: [
+            'Say: "For here, please" or "To go, please"',
+            'You can say: "I\'ll eat here, thanks!"',
+            'Try: "To take away, please"'
+          ],
+          suggestedUserResponses: [
+            'For here, please.',
+            'To go, please.',
+            'I\'ll have it here, thanks!'
+          ]
+        },
+        {
+          turnNumber: 4,
+          expectedTopics: ['pay', 'thanks', 'goodbye'],
+          tutorResponses: [
+            {
+              keywords: ['card', 'credit', 'pay', 'apple'],
+              response: 'Perfect! Just tap right here. All set! Your order will be ready at the counter in about 2 minutes. Enjoy your morning!'
+            },
+            {
+              keywords: ['thank', 'thanks', 'bye', 'goodbye', 'see you'],
+              response: 'You\'re welcome! Enjoy your coffee and have an amazing day! Come back anytime!'
+            },
+            {
+              keywords: ['receipt', 'bag'],
+              response: 'Of course! Here\'s your receipt. Your order is almost ready. Thank you for coming to Soho Roasters!'
+            }
+          ],
+          fallbackResponse: 'Alright, your total is $7.50. Cash or card? And thanks for visiting us!',
+          helpPrompts: [
+            'Say: "I\'ll pay with card, please"',
+            'Try: "Thank you! Have a nice day!"',
+            'You could say: "Can I have a receipt, please?"'
+          ],
+          suggestedUserResponses: [
+            'I\'ll pay by card, please.',
+            'Thank you so much! Have a nice day!',
+            'Can I have a receipt?'
+          ]
+        },
+        {
+          turnNumber: 5,
+          expectedTopics: ['farewell'],
+          tutorResponses: [
+            {
+              keywords: ['thank', 'thanks', 'bye', 'great', 'good', 'nice', 'wonderful', 'awesome'],
+              response: 'Thanks for stopping by! You did a great job ordering in English. Have a beautiful day and come back soon! ☕'
+            }
+          ],
+          fallbackResponse: 'It was great serving you today! Your coffee is ready — enjoy! Have a wonderful day! ☕',
+          helpPrompts: [
+            'Say goodbye: "Thanks, have a great day!"',
+            'Try: "Bye! See you next time!"'
+          ],
+          suggestedUserResponses: [
+            'Thanks! See you next time!',
+            'Bye! Have a great day!',
+            'Thank you, the coffee is great!'
+          ]
+        }
+      ]
+    }
   },
   {
     id: 'scenario-a2-2',
@@ -837,7 +994,130 @@ export const SPEAKING_SCENARIOS: SpeakingScenario[] = [
     accent: 'UK',
     targetVocab: ['Straight', 'Turn left', 'Turn right', 'Blocks', 'Station'],
     suggestedDurationMinutes: 8,
-    pnlTip: 'Responde usando: "Excuse me, could you tell me how to get to the station?"'
+    pnlTip: 'Responde usando: "Excuse me, could you tell me how to get to the station?"',
+    conversationFlow: {
+      turns: [
+        {
+          turnNumber: 1,
+          expectedTopics: ['directions', 'station', 'lost', 'help'],
+          tutorResponses: [
+            {
+              keywords: ['station', 'train', 'railway'],
+              response: 'The train station? Sure! It\'s about a 10-minute walk from here. Go straight down this street for two blocks, then turn left on Oxford Road. You\'ll see it on your right.'
+            },
+            {
+              keywords: ['yes', 'please', 'help', 'lost', 'looking'],
+              response: 'Of course! Where are you trying to go? Are you looking for the train station, a bus stop, or somewhere else?'
+            },
+            {
+              keywords: ['museum', 'park', 'restaurant', 'hotel'],
+              response: 'Ah, I know that area! It\'s not far from here. Walk straight ahead for about 5 minutes and turn right at the traffic lights. You can\'t miss it!'
+            },
+            {
+              keywords: ['bus', 'taxi', 'uber'],
+              response: 'The nearest bus stop is just around the corner — about 2 minutes that way. Buses come every 10 minutes. Would you like me to show you?'
+            }
+          ],
+          fallbackResponse: 'Of course! I\'m happy to help. Are you looking for the train station? It\'s the most popular destination around here.',
+          helpPrompts: [
+            'Try: "Yes, I\'m looking for the train station"',
+            'Say: "Could you tell me how to get to the station?"',
+            'Ask: "Where is the nearest bus stop?"'
+          ],
+          suggestedUserResponses: [
+            'Yes, I\'m looking for the train station.',
+            'Could you tell me how to get to the station?',
+            'Where is the nearest bus stop?'
+          ]
+        },
+        {
+          turnNumber: 2,
+          expectedTopics: ['understanding', 'repeat', 'walking', 'far'],
+          tutorResponses: [
+            {
+              keywords: ['far', 'long', 'walk', 'minutes', 'how long'],
+              response: 'It\'s about a 10-minute walk. Not too far! Just keep going straight until you see the big clock tower — that\'s right next to the station entrance.'
+            },
+            {
+              keywords: ['repeat', 'again', 'sorry', 'understand', 'slowly'],
+              response: 'No problem! So: go straight on this road for two blocks. Then turn left. The station will be on your right side. Simple as that!'
+            },
+            {
+              keywords: ['left', 'right', 'straight', 'turn', 'block'],
+              response: 'Exactly! You\'ve got it. After you turn left, you\'ll see a big red building — the station is just past that. You really can\'t miss it.'
+            },
+            {
+              keywords: ['thank', 'thanks', 'got it', 'ok', 'okay'],
+              response: 'You\'re welcome! Oh, and one more tip — if you need to buy a ticket, the machines are right at the entrance. Much faster than the queue at the counter!'
+            },
+            {
+              keywords: ['map', 'google', 'phone'],
+              response: 'Good idea to check your phone! But honestly, it\'s really easy to find on foot. Just go straight and turn left at the second crossing. You\'ll be there in no time!'
+            }
+          ],
+          fallbackResponse: 'It\'s really close! About a 10-minute walk. Just go straight and turn left at the second block. Would you like me to walk with you part of the way?',
+          helpPrompts: [
+            'Ask: "Is it far from here?"',
+            'Say: "Could you repeat that, please?"',
+            'Try: "Turn left at the second block, right?"'
+          ],
+          suggestedUserResponses: [
+            'Is it far from here?',
+            'Could you repeat that, please?',
+            'So I go straight and turn left?'
+          ]
+        },
+        {
+          turnNumber: 3,
+          expectedTopics: ['confirm', 'ticket', 'thank'],
+          tutorResponses: [
+            {
+              keywords: ['ticket', 'buy', 'machine', 'counter', 'how much'],
+              response: 'You can buy tickets from the machines at the entrance. They accept cards and cash. A single ticket to the city centre is about £4.50.'
+            },
+            {
+              keywords: ['thank', 'thanks', 'helpful', 'kind'],
+              response: 'My pleasure! I hope you enjoy London. If you ever get lost again, just ask anyone — Londoners are usually happy to help! Have a lovely trip!'
+            },
+            {
+              keywords: ['time', 'schedule', 'next train', 'when'],
+              response: 'Trains run every 15 minutes or so. You should be able to catch one pretty quickly once you get there. Just check the departure board at the station.'
+            }
+          ],
+          fallbackResponse: 'You\'re almost there! When you arrive at the station, look for the departure board for train times. Have a wonderful trip!',
+          helpPrompts: [
+            'Ask: "Where can I buy a ticket?"',
+            'Say: "Thank you so much for your help!"',
+            'Try: "What time is the next train?"'
+          ],
+          suggestedUserResponses: [
+            'Where can I buy a ticket?',
+            'Thank you so much for your help!',
+            'What time is the next train?'
+          ]
+        },
+        {
+          turnNumber: 4,
+          expectedTopics: ['goodbye', 'final'],
+          tutorResponses: [
+            {
+              keywords: ['thank', 'thanks', 'bye', 'goodbye', 'helpful'],
+              response: 'You\'re very welcome! Enjoy your time in London. Cheerio! 🇬🇧'
+            }
+          ],
+          fallbackResponse: 'It was lovely chatting with you! Safe travels and enjoy London! Cheers! 🇬🇧',
+          helpPrompts: [
+            'Say goodbye: "Thank you! Goodbye!"',
+            'Try: "Thanks for everything! Cheers!"'
+          ],
+          suggestedUserResponses: [
+            'Thank you! Goodbye!',
+            'Thanks for everything! Cheers!',
+            'Have a great day!'
+          ]
+        }
+      ]
+    }
   },
   {
     id: 'scenario-1',
@@ -849,7 +1129,119 @@ export const SPEAKING_SCENARIOS: SpeakingScenario[] = [
     starterPrompt: 'Hello! Thank you for joining us today. To kick off our conversation, could you briefly introduce yourself and describe a challenging project you successfully navigated in your past role?',
     accent: 'US',
     targetVocab: ['Overcome', 'Deadlines', 'Streamline', 'Collaborative', 'Outcome'],
-    suggestedDurationMinutes: 10
+    suggestedDurationMinutes: 10,
+    conversationFlow: {
+      turns: [
+        {
+          turnNumber: 1,
+          expectedTopics: ['introduction', 'experience', 'project', 'challenge'],
+          tutorResponses: [
+            {
+              keywords: ['project', 'team', 'manage', 'lead', 'coordinate', 'work'],
+              response: 'That sounds like valuable experience! What would you say is your greatest strength when it comes to working in a team environment?'
+            },
+            {
+              keywords: ['name', 'hi', 'hello', 'my name', 'i am', 'i\'m'],
+              response: 'Nice to meet you! So tell me, what kind of projects have you worked on recently? What was the most challenging one?'
+            },
+            {
+              keywords: ['challenge', 'difficult', 'problem', 'hard', 'obstacle'],
+              response: 'I appreciate you sharing that. How did you handle that challenge specifically? What approach or strategy did you use?'
+            }
+          ],
+          fallbackResponse: 'Thank you for sharing! Could you tell me more about your experience? What type of projects have you been involved in?',
+          helpPrompts: [
+            'Start with: "Hi, my name is... I have experience in..."',
+            'Talk about a project: "In my last job, I worked on a project where..."',
+            'Mention a challenge: "The biggest challenge I faced was..."'
+          ],
+          suggestedUserResponses: [
+            'Hi! My name is... I have 3 years of experience in project management.',
+            'In my last role, I managed a team project with tight deadlines.',
+            'The most challenging project was when we had to deliver in two weeks.'
+          ]
+        },
+        {
+          turnNumber: 2,
+          expectedTopics: ['strengths', 'skills', 'teamwork'],
+          tutorResponses: [
+            {
+              keywords: ['team', 'people', 'communication', 'collaborate', 'together'],
+              response: 'Excellent! Communication and collaboration are key in this role. Now, can you describe a situation where you had to meet a very tight deadline? How did you handle the pressure?'
+            },
+            {
+              keywords: ['organize', 'plan', 'detail', 'efficient', 'productive'],
+              response: 'Being organized is so important! Can you give me a specific example where your planning skills made a real difference in a project outcome?'
+            },
+            {
+              keywords: ['learn', 'adapt', 'flexible', 'quick', 'new'],
+              response: 'Adaptability is a great asset! In this role, priorities change frequently. Could you give me an example of when you had to adapt quickly to a change?'
+            }
+          ],
+          fallbackResponse: 'That\'s a great perspective. Could you also tell me about your main strengths? What skills do you bring to the table?',
+          helpPrompts: [
+            'Talk about strengths: "My biggest strength is communication"',
+            'Give an example: "For example, in my last project I..."',
+            'Mention skills: "I\'m very good at organizing and planning"'
+          ],
+          suggestedUserResponses: [
+            'My greatest strength is communication and teamwork.',
+            'I\'m very organized and I always plan ahead.',
+            'I learn quickly and adapt to new situations.'
+          ]
+        },
+        {
+          turnNumber: 3,
+          expectedTopics: ['deadline', 'pressure', 'example'],
+          tutorResponses: [
+            {
+              keywords: ['deadline', 'time', 'pressure', 'fast', 'rush', 'urgent'],
+              response: 'That\'s impressive! It shows great resilience. One last question: where do you see yourself in three years, and why does this position interest you?'
+            },
+            {
+              keywords: ['solve', 'solution', 'fix', 'improve', 'result', 'outcome'],
+              response: 'What a great outcome! You clearly know how to deliver results under pressure. Final question: why are you interested in this specific role at our company?'
+            }
+          ],
+          fallbackResponse: 'Thank you for that insight. Last question for today: what motivates you about this role, and where do you see your career going?',
+          helpPrompts: [
+            'Share an example: "Once we had a deadline and I organized the team to..."',
+            'Talk about results: "The result was that we delivered on time and..."',
+            'Mention pressure: "Under pressure, I prioritize tasks and focus on..."'
+          ],
+          suggestedUserResponses: [
+            'When we had a tight deadline, I organized the team and we delivered on time.',
+            'I prioritize the most important tasks first when under pressure.',
+            'The outcome was positive — we finished the project successfully.'
+          ]
+        },
+        {
+          turnNumber: 4,
+          expectedTopics: ['future', 'motivation', 'why this job'],
+          tutorResponses: [
+            {
+              keywords: ['grow', 'learn', 'develop', 'career', 'future', 'company'],
+              response: 'That\'s a wonderful answer! I can see you\'re a great fit for this position. Thank you so much for your time today. We\'ll be in touch soon with next steps. Best of luck!'
+            },
+            {
+              keywords: ['interest', 'passion', 'love', 'excited', 'opportunity'],
+              response: 'Your enthusiasm really shows! This has been a great conversation. We\'ll review your application and get back to you within the week. Thank you!'
+            }
+          ],
+          fallbackResponse: 'Thank you so much for this interview! You gave some really thoughtful answers. We\'ll be in contact soon. Have a great day!',
+          helpPrompts: [
+            'Say: "I want to grow my career in project management"',
+            'Try: "This position interests me because..."',
+            'Share: "In three years, I see myself leading bigger projects"'
+          ],
+          suggestedUserResponses: [
+            'I see myself growing into a leadership role in project management.',
+            'This position interests me because I love working with international teams.',
+            'I\'m excited about this opportunity to learn and develop my skills.'
+          ]
+        }
+      ]
+    }
   },
   {
     id: 'scenario-2',
@@ -861,7 +1253,94 @@ export const SPEAKING_SCENARIOS: SpeakingScenario[] = [
     starterPrompt: 'David here. Look, our stakeholders are pushing hard to launch this by the 15th. We really need your team to expedite the delivery. What are the realistic options on the table?',
     accent: 'UK',
     targetVocab: ['Compromise', 'Bottleneck', 'Feasible', 'Trade-off', 'Contingency'],
-    suggestedDurationMinutes: 15
+    suggestedDurationMinutes: 15,
+    conversationFlow: {
+      turns: [
+        {
+          turnNumber: 1,
+          expectedTopics: ['timeline', 'options', 'negotiate'],
+          tutorResponses: [
+            {
+              keywords: ['possible', 'can', 'try', 'maybe', 'feasible', 'option'],
+              response: 'I appreciate your willingness to explore options. But I need to be transparent — if we cut corners, do you have a contingency plan in case the quality falls below standard?'
+            },
+            {
+              keywords: ['difficult', 'hard', 'impossible', 'risk', 'quality', 'can\'t', 'cannot'],
+              response: 'I understand your concerns about quality. But our board has set a firm date. What if we reduced the scope slightly? Which features could we defer to a phase two?'
+            },
+            {
+              keywords: ['need', 'more time', 'extend', 'delay', 'realistic'],
+              response: 'I hear you, but extending isn\'t really an option. Could your team work in parallel streams to speed things up without sacrificing the core features?'
+            }
+          ],
+          fallbackResponse: 'I understand this is a complex situation. Let me put it simply: can your team deliver the core features by the 15th, even if some extras come later?',
+          helpPrompts: [
+            'Try: "I understand the urgency, but moving the deadline creates risks for quality"',
+            'Say: "We could explore reducing the scope of the first delivery"',
+            'Suggest: "One option would be to deliver the core features first"'
+          ],
+          suggestedUserResponses: [
+            'I understand the urgency, but we need to discuss the impact on quality.',
+            'We could deliver the core features by the 15th and defer some extras.',
+            'Moving the timeline is risky. Can we explore alternatives?'
+          ]
+        },
+        {
+          turnNumber: 2,
+          expectedTopics: ['scope', 'features', 'compromise'],
+          tutorResponses: [
+            {
+              keywords: ['phase', 'two', 'defer', 'later', 'priority', 'core'],
+              response: 'A phased approach could work. Which features do you consider essential for the launch, and what can wait? I need specifics to take back to my board.'
+            },
+            {
+              keywords: ['resource', 'people', 'team', 'hire', 'more staff', 'parallel'],
+              response: 'Adding more resources could help. Would that affect the budget, though? What would be the additional cost, approximately?'
+            },
+            {
+              keywords: ['test', 'testing', 'QA', 'bug', 'quality'],
+              response: 'Good point about testing. What if we did an accelerated testing cycle? We could focus on critical path testing rather than full regression.'
+            }
+          ],
+          fallbackResponse: 'Let me ask you this: what\'s the minimum viable product we need for launch day? What absolutely cannot be delayed?',
+          helpPrompts: [
+            'Propose: "The essential features are X, Y, and Z. The rest can come in phase two"',
+            'Suggest: "We could bring in additional team members, but the cost would increase"',
+            'Mention: "We should keep the testing phase — skipping QA would be too risky"'
+          ],
+          suggestedUserResponses: [
+            'The essential features are authentication, dashboard, and reporting.',
+            'We could add two more developers, but the budget would increase by 20%.',
+            'I recommend keeping full testing — cutting QA creates too much risk.'
+          ]
+        },
+        {
+          turnNumber: 3,
+          expectedTopics: ['agreement', 'plan', 'next steps'],
+          tutorResponses: [
+            {
+              keywords: ['agree', 'deal', 'plan', 'works', 'sounds good', 'accept'],
+              response: 'Excellent! I think we\'ve found a workable solution. Let\'s document this revised plan and share it with both teams by end of day. Thanks for being so collaborative!'
+            },
+            {
+              keywords: ['budget', 'cost', 'money', 'invest', 'price'],
+              response: 'The budget consideration is fair. Let me take this back to finance and see what we can approve. Can you send me a detailed breakdown by tomorrow morning?'
+            }
+          ],
+          fallbackResponse: 'I think we\'re making progress. Let\'s summarize what we\'ve agreed on and put together a revised project plan. Can you send that over by end of week?',
+          helpPrompts: [
+            'Summarize: "So we agreed to deliver core features by the 15th and the rest by..."',
+            'Confirm: "I\'ll send you a detailed revised plan by tomorrow"',
+            'Close: "This plan works for both sides. Let\'s move forward"'
+          ],
+          suggestedUserResponses: [
+            'Great, so we\'ll deliver core features by the 15th and extras by month-end.',
+            'I\'ll prepare a revised timeline and send it to you by tomorrow.',
+            'I think this is a fair compromise. Let\'s finalize the details.'
+          ]
+        }
+      ]
+    }
   },
   {
     id: 'scenario-3',
@@ -873,7 +1352,94 @@ export const SPEAKING_SCENARIOS: SpeakingScenario[] = [
     starterPrompt: 'Welcome. Given the rapid proliferation of autonomous agents in knowledge work, there is a fierce debate between unfettered innovation and stringent governance. Where do you stand on this continuum?',
     accent: 'UK',
     targetVocab: ['Ubiquitous', 'Stringent', 'Mitigate', 'Disruption', 'Paradigm shift', 'Imperative'],
-    suggestedDurationMinutes: 20
+    suggestedDurationMinutes: 20,
+    conversationFlow: {
+      turns: [
+        {
+          turnNumber: 1,
+          expectedTopics: ['position', 'opinion', 'AI', 'regulation'],
+          tutorResponses: [
+            {
+              keywords: ['regulate', 'governance', 'rules', 'control', 'limit', 'regulation'],
+              response: 'An interesting position in favour of governance. But some would argue that over-regulation stifles innovation and puts companies at a competitive disadvantage. How would you respond to that critique?'
+            },
+            {
+              keywords: ['innovation', 'freedom', 'open', 'progress', 'develop', 'grow'],
+              response: 'A compelling case for innovation-first. However, the counterargument is that unchecked AI deployment raises serious ethical concerns — bias, job displacement, privacy. How do you propose we mitigate those risks?'
+            },
+            {
+              keywords: ['balance', 'both', 'middle', 'combine', 'moderate'],
+              response: 'A nuanced stance. Could you articulate what that balanced framework would look like in practice? Which specific guardrails would you implement while still fostering innovation?'
+            }
+          ],
+          fallbackResponse: 'That\'s a thoughtful starting point. Could you elaborate on your position? Specifically, where should the line be drawn between enabling AI innovation and protecting against its potential risks?',
+          helpPrompts: [
+            'Share your view: "I believe we need a balanced approach that combines innovation with responsible governance"',
+            'Take a strong position: "In my view, strict regulation is necessary to prevent misuse"',
+            'Argue for innovation: "I think excessive regulation would slow down progress and competitiveness"'
+          ],
+          suggestedUserResponses: [
+            'I believe we need a balanced approach with clear ethical guidelines.',
+            'In my view, some regulation is necessary to prevent misuse of AI.',
+            'Innovation should come first, but with responsible governance frameworks.'
+          ]
+        },
+        {
+          turnNumber: 2,
+          expectedTopics: ['risks', 'benefits', 'framework', 'ethics'],
+          tutorResponses: [
+            {
+              keywords: ['bias', 'fair', 'discrimination', 'ethical', 'data', 'privacy'],
+              response: 'The bias and privacy concerns are indeed paramount. Let me push you further: who should be held accountable when an AI system makes a consequential error — the developer, the deploying company, or the AI itself?'
+            },
+            {
+              keywords: ['job', 'employment', 'replace', 'automate', 'worker', 'displacement'],
+              response: 'Workforce displacement is perhaps the most socially charged dimension of this debate. Do you believe AI will create more jobs than it eliminates, or are we heading towards a fundamental restructuring of the labour market?'
+            },
+            {
+              keywords: ['framework', 'policy', 'guideline', 'standard', 'audit'],
+              response: 'Establishing frameworks is crucial. But implementation is where things get complex. How would you ensure compliance across different jurisdictions and corporate cultures?'
+            }
+          ],
+          fallbackResponse: 'You raise valid points. Let\'s drill deeper: what are the most significant risks of AI in the workplace, and how would you address them while maintaining a competitive edge?',
+          helpPrompts: [
+            'Discuss risks: "The main risks include data privacy, algorithmic bias, and job displacement"',
+            'Propose solutions: "Companies should implement mandatory AI audits and transparency reports"',
+            'Use advanced vocabulary: "It is imperative that we establish robust governance frameworks"'
+          ],
+          suggestedUserResponses: [
+            'The main risks include algorithmic bias, data privacy, and workforce displacement.',
+            'Companies should be held accountable through mandatory AI impact assessments.',
+            'It is imperative that we establish transparent, auditable AI governance frameworks.'
+          ]
+        },
+        {
+          turnNumber: 3,
+          expectedTopics: ['accountability', 'future', 'solution'],
+          tutorResponses: [
+            {
+              keywords: ['company', 'responsible', 'accountab', 'liable', 'audit'],
+              response: 'Corporate accountability is essential, agreed. As we wrap up, what would be your one key recommendation to business leaders navigating this paradigm shift? What\'s the non-negotiable?'
+            },
+            {
+              keywords: ['education', 'train', 'upskill', 'learn', 'reskill', 'prepare'],
+              response: 'Investing in human capital is indeed critical. For our closing, if you had to distill your vision into one actionable imperative for CEOs today, what would it be?'
+            }
+          ],
+          fallbackResponse: 'Excellent perspectives throughout. As we conclude, what single recommendation would you give to corporate leaders preparing for the AI-driven future?',
+          helpPrompts: [
+            'Conclude with: "My key recommendation would be to invest in both AI capability and human upskilling"',
+            'Summarize: "In summary, the imperative is to balance innovation with ethical responsibility"',
+            'Give a recommendation: "Leaders must prioritize transparency and establish clear AI governance policies"'
+          ],
+          suggestedUserResponses: [
+            'Leaders must invest equally in AI capability and human upskilling programmes.',
+            'The non-negotiable is transparency — every AI decision must be explainable.',
+            'My recommendation is to embrace innovation while establishing robust ethical guardrails.'
+          ]
+        }
+      ]
+    }
   }
 ];
 
